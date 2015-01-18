@@ -2,12 +2,14 @@ package game.objects;
 
 import game.Content;
 import game.MyConst;
-import game.ai.AIState;
+import game.ai.AIType;
+import game.ai.EnemyState;
 import game.states.PlayState;
 import game.tools.MapBodyBuilder;
 import box2dLight.ConeLight;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
+import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -17,7 +19,7 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class Enemy extends GameObject implements Updatable{
-	
+	private StateMachine<Enemy> stateMachine;
 	//path
 	private Vector2[] patrolPath;
 	private Vector2[] path;
@@ -26,8 +28,12 @@ public class Enemy extends GameObject implements Updatable{
 	float pathLength=0;
 	float finderInterval=1f;
 	//ai
-	private AIState aiState=AIState.WAITING;
-	
+	private AIType aiState=AIType.WAITING;
+	private float pathTimer=0;
+	private float giveUpTimer=0;
+	private float lookoutTimer=0;
+	private float turnTimer=0;
+	private float reactionTimer=0;
 	//flashlight
 	private ConeLight light;
 	
@@ -45,10 +51,12 @@ public class Enemy extends GameObject implements Updatable{
     			9, 0, 0, imgRotation,25);
         light.setSoftnessLength(1f);
         light.setContactFilter((short)(MyConst.CATEGORY_PLAYER|MyConst.CATEGORY_BULLETS), (short)0,(short)(MyConst.MASK_PLAYER&MyConst.MASK_BULLETS));
+        stateMachine = new DefaultStateMachine<Enemy>(this, EnemyState.LOOKOUT);
     }
 	
 	public void setPath(Vector2[] vertices) {
-		float m=0;
+		waypoint=0;
+		/*float m=0;
 		Vector2 last=null;
 		for(int i=0; i<vertices.length;i++){
 			if(last!=null){
@@ -59,7 +67,7 @@ public class Enemy extends GameObject implements Updatable{
 			last=vertices[i];
 		}
 		
-	    pathLength=m;
+	    pathLength=m;*/
 		path = vertices;
 		
 	}
@@ -100,18 +108,22 @@ public class Enemy extends GameObject implements Updatable{
 	
 	@Override
 	public void update(float delta) {
-		
-		
-		aiUpdate(delta);
+		pathTimer+=delta;
+		giveUpTimer+=delta;
+		lookoutTimer+=delta;
+		turnTimer+=delta;
+		reactionTimer+=delta;
+		stateMachine.update();
 		handleRotation(delta);
         light.setPosition(getPosition());
 		light.setDirection(imgRotation);
 	}
 	
+	
 	public void aiUpdate (float delta){	
-		if(light.contains(state.getPlayer().getPosition().x, state.getPlayer().getPosition().y)){
+		if(seePlayer()){
 			
-			aiState=AIState.CHASING;
+			aiState=AIType.CHASING;
 			findPathToPlayer();
 			
 		}
@@ -126,7 +138,7 @@ public class Enemy extends GameObject implements Updatable{
 					findPathTo(patrolPath[0]);
 				}
 				if(getPosition().dst(patrolPath[0])<0.5f){
-					aiState=AIState.PATROL;
+					aiState=AIType.PATROL;
 					path=patrolPath;
 					waypoint=0;
 				}
@@ -147,14 +159,14 @@ public class Enemy extends GameObject implements Updatable{
 				if(finderInterval<0){
 					findPathToPlayer();
 					finderInterval=1f;
-					/*if(getPosition().dst(state.getPlayer().getPosition())<5){
+					if(getPosition().dst(state.getPlayer().getPosition())<5){
 						findPathToPlayer();
 						finderInterval=1f;
 					}else{
 						
-						aiState=AIState.WAITING;
+						aiState=AIType.WAITING;
 						path=null;
-					}*/
+					}
 					
 				}
 				finderInterval-=delta;
@@ -163,12 +175,88 @@ public class Enemy extends GameObject implements Updatable{
 			
 		}
 	}
+	public boolean seePlayer(){
+		return light.contains(state.getPlayer().getPosition().x, state.getPlayer().getPosition().y);
+	}
 	
+	public int getWaypoint() {
+		return waypoint;
+	}
+
+	public void setWaypoint(int waypoint) {
+		this.waypoint = waypoint;
+	}
+
+	public float getTolerance() {
+		return tolerance;
+	}
+
+	public void setTolerance(float tolerance) {
+		this.tolerance = tolerance;
+	}
+
+	public float getPathLength() {
+		return pathLength;
+	}
+
+	public void setPathLength(float pathLength) {
+		this.pathLength = pathLength;
+	}
+
+	public float getFinderInterval() {
+		return finderInterval;
+	}
+
+	public void setFinderInterval(float finderInterval) {
+		this.finderInterval = finderInterval;
+	}
+
+	public AIType getAiState() {
+		return aiState;
+	}
+
+	public void setAiState(AIType aiState) {
+		this.aiState = aiState;
+	}
+
+	public ConeLight getLight() {
+		return light;
+	}
+
+	public void setLight(ConeLight light) {
+		this.light = light;
+	}
+	
+
+	public boolean isDying() {
+		return dying;
+	}
+
+	public void setDying(boolean dying) {
+		this.dying = dying;
+	}
+
+	public float getTargetRotation() {
+		return targetRotation;
+	}
+
+	public void setTargetRotation(float targetRotation) {
+		this.targetRotation = targetRotation;
+	}
+
+	public Vector2[] getPatrolPath() {
+		return patrolPath;
+	}
+
+	public Vector2[] getPath() {
+		return path;
+	}
+
 	public void findPathToPlayer(){
 		findPathTo(state.getPlayer().getPosition());
 	}
 	public void findPathTo(Vector2 to){
-		waypoint=0;
+		
 		setPath(MapBodyBuilder.findPath(getPosition(), to, state.getMap()));
 	}
 	
@@ -180,7 +268,7 @@ public class Enemy extends GameObject implements Updatable{
 		}
 		Vector2 v=path[waypoint].cpy().sub(getPosition()).nor().scl(speed);
 		
-		if(aiState==AIState.CHASING){
+		if(aiState==AIType.CHASING){
 			targetRotation=state.getPlayer().getPosition().cpy().sub(getPosition()).angle();
 		}else if(imgRotation!=v.angle()){
         	targetRotation=v.angle();
@@ -194,6 +282,7 @@ public class Enemy extends GameObject implements Updatable{
         		
         		waypoint=0;
         	}
+        	
         	
         }
         
@@ -230,6 +319,8 @@ public class Enemy extends GameObject implements Updatable{
 			
 		
 	}
+	
+	
 	public boolean isReached(){
 		//System.out.println("dlength: "+(path[waypoint].x-getPosition().x));
 		if(Math.abs(path[waypoint].x-getPosition().x)<tolerance&&Math.abs(path[waypoint].y-getPosition().y)<tolerance){
@@ -250,6 +341,40 @@ public class Enemy extends GameObject implements Updatable{
     	setPath(path);
     	patrolPath=path;
     }
+    public StateMachine<Enemy> getStateMachine() {
+		return stateMachine;
+	}
     
+    public float getPathTimer() {
+		return pathTimer;
+	}
+    public void setPathTimer(float pathTimer) {
+		this.pathTimer = pathTimer;
+	}
+    public void setGiveUpTimer(float giveUpTimer) {
+		this.giveUpTimer = giveUpTimer;
+	}
+    public float getGiveUpTimer() {
+		return giveUpTimer;
+	}
     
+    public float getLookoutTimer() {
+		return lookoutTimer;
+	}
+   public void setLookoutTimer(float lookoutTimer) {
+	this.lookoutTimer = lookoutTimer;
+}
+   
+   public float getTurnTimer() {
+	return turnTimer;
+}
+   public void setTurnTimer(float turnTimer) {
+	this.turnTimer = turnTimer;
+}
+   public void setReactionTimer(float reactionTimer) {
+	this.reactionTimer = reactionTimer;
+}
+   public float getReactionTimer() {
+	return reactionTimer;
+}
 }

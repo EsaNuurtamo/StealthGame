@@ -49,7 +49,7 @@ public class Player extends GameObject implements Updatable{
 		if (Gdx.input.isKeyPressed(Keys.S)) {
 			v.add(new Vector2(0,-50));
 		}
-		body.setLinearVelocity(v.limit(speed));
+		body.setLinearVelocity(v.nor().scl(speed));
 		
 		
 		Vector2 mouse=new Vector2(Gdx.graphics.getWidth()/2,Gdx.graphics.getHeight()/2);

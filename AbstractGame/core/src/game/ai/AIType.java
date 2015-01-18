@@ -1,5 +1,5 @@
 package game.ai;
 
-public enum AIState {
+public enum AIType {
 	WAITING, PATROL, SEARCHING, CHASING
 }

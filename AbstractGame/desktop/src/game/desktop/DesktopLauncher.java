@@ -17,11 +17,8 @@ public class DesktopLauncher {
 		config.vSyncEnabled=true;
 		config.fullscreen=true;
 		Settings settings = new Settings();
-        
         //TexturePacker.process(settings, "/Users/esa/Desktop/LIBGDX/AbstractGame/android/assets/images", 
-        //								"/Users/esa/Desktop/LIBGDX/AbstractGame/android/assets/images", "game");
-
-    
+        //								  "/Users/esa/Desktop/LIBGDX/AbstractGame/android/assets/images", "game");
 		new LwjglApplication(new Main(), config);
 	}
 }

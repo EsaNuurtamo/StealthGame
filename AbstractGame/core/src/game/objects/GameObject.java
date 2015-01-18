@@ -138,4 +138,8 @@ public class GameObject{
     public void setDying(boolean dying) {
 		this.dying = dying;
 	}
+    
+    public float getRotation() {
+		return imgRotation;
+	}
 }
