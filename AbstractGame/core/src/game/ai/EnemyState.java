@@ -1,12 +1,16 @@
 package game.ai;
 
 import game.objects.Enemy;
+import game.objects.GameObject;
 import game.tools.MyUtils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.Timer.Task;
 
 
 
@@ -14,10 +18,11 @@ import com.badlogic.gdx.math.Vector2;
 
 public enum EnemyState implements State<Enemy>{
 	
+	
 	LOOKOUT() {
 		
-		private float rotation=0;
-		private float sector=60;
+		
+		private float sector=80;
 		
         @Override
         public void update(Enemy enemy) {
@@ -26,7 +31,6 @@ public enum EnemyState implements State<Enemy>{
 				enemy.getStateMachine().changeState(CHASING);
 			}
 			if(enemy.getPatrolPath()!=null&&enemy.getLookoutTimer()>4){
-				
 				enemy.getStateMachine().changeState(WALK_TO_PATROL);
 				enemy.setLookoutTimer(0);
 			}
@@ -49,9 +53,15 @@ public enum EnemyState implements State<Enemy>{
 		public void enter(Enemy enemy) {
 			
 			enemy.setLookoutTimer(0);
-			rotation=enemy.getRotation();
 			
 			
+			
+		}
+		@Override
+		public boolean onMessage(Enemy entity, Telegram telegram) {
+			
+			
+			return true;
 		}
 		
     },
@@ -75,7 +85,7 @@ public enum EnemyState implements State<Enemy>{
 		@Override
 		public void enter(Enemy enemy)
 		{
-			
+			enemy.getLight().setColor(new Color(0,0,1f,0.4f));
 			enemy.setSpeed(1);
 			Vector2 patrolStart=enemy.getPatrolPath()[0];
 			enemy.findPathTo(patrolStart);
@@ -97,15 +107,13 @@ public enum EnemyState implements State<Enemy>{
 		@Override
 		public void enter(Enemy enemy)
 		{
-			
 			enemy.setPath(enemy.getPatrolPath());
 			enemy.setSpeed(1);
-			
-			
 		}
 		
     },
     
+    //searching the player after loosing him
     SEARCH() {
     	
         @Override
@@ -115,10 +123,7 @@ public enum EnemyState implements State<Enemy>{
         		
 				enemy.getStateMachine().changeState(CHASING);
 			}
-        	if(enemy.getGiveUpTimer()>4){
-        		enemy.getStateMachine().changeState(LONG_SEARCH);
-        		enemy.setGiveUpTimer(0);
-        	}
+        	
         	
         	//timedEvents
         	if(enemy.getPathTimer()>1){
@@ -134,15 +139,19 @@ public enum EnemyState implements State<Enemy>{
 
 		@Override
 		public void enter(Enemy enemy) {
-			
+			enemy.getLight().setColor(new Color(1f,1f,0,0.4f));
 			enemy.findPathToPlayer();
 			enemy.setPathTimer(3);
-			enemy.setGiveUpTimer(0);
+			
 			enemy.setSpeed(3);
+			
+			//timed statechange
+			Timer.schedule(enemy.giveUp(), 4f);
 			
 		}
     },
     
+    //more passive searching when enemy has searched for long already
     LONG_SEARCH() {
     	
         @Override
@@ -173,12 +182,12 @@ public enum EnemyState implements State<Enemy>{
 
 		@Override
 		public void enter(Enemy enemy) {
-			
+			enemy.getLight().setColor(new Color(1f,1f,0,0.4f));
 			enemy.findPathToPlayer();
 			enemy.setPathTimer(3);
 			enemy.setGiveUpTimer(0);
 			enemy.setSpeed(1);
-			
+			//Timer.schedule(enemy.giveUp(), 10f);
 		}
     },
     
@@ -198,9 +207,18 @@ public enum EnemyState implements State<Enemy>{
 
 		@Override
 		public void enter(Enemy enemy) {
-			enemy.setReactionTimer(0);
 			
+			enemy.setReactionTimer(0);
+			enemy.getLight().setColor(new Color(1f,0,0,0.4f));
 			enemy.setSpeed(3);
+			
+			//all near enemies join on search
+			//tee vihulle ringalarm joka vaihtaa playstateen tilaksi alarmed ja hoida siellä tämä
+			for(GameObject obj:MyUtils.objInRange(enemy.getState().getObjects(), enemy.getPosition(), 15f)){
+				if(obj instanceof Enemy&&!((Enemy)obj).getStateMachine().isInState(CHASING)&&!((Enemy)obj).getStateMachine().isInState(SEARCH)){
+					((Enemy) obj).getStateMachine().changeState(SEARCH);
+				}
+			}
 			
 		}
     };

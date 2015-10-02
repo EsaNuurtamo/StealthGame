@@ -10,6 +10,9 @@ import game.Content;
 import game.MyConst;
 import game.states.PlayState;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -25,9 +28,10 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 public class Bullet extends GameObject implements Updatable{
 	  
 	float animTime=0;
+	private boolean red=false;
     public Bullet(PlayState state, Vector2 position) {
         super(state, position);
-        curTexture=new TextureRegion(Content.atlas.findRegion("Bullet"));
+        curTexture=new Sprite(Content.atlas.findRegion("Bullet"));
         imgWidth=(int)(fixture.getShape().getRadius()*2*5);
     	imgHeight=(int)(fixture.getShape().getRadius()*2*5);
         speed=20;
@@ -69,6 +73,7 @@ public class Bullet extends GameObject implements Updatable{
    
 	@Override
 	public void update(float delta) {
+		
 		if(dying){
 			body.setActive(false);
 			if(animation==null){
@@ -80,14 +85,26 @@ public class Bullet extends GameObject implements Updatable{
 				destroyed=true;
 				return;
 			}
-			curTexture=animation.getKeyFrame(animTime);
+			
+			curTexture=new Sprite(animation.getKeyFrame(animTime));
+			
 			animTime+=delta;
 			return;
 		}
 		body.setLinearVelocity(direction.cpy().limit(speed));
 		
 	}
+	@Override
+	public void draw(SpriteBatch batch) {
+		Color c=batch.getColor();
+		if(red)batch.setColor(Color.RED);
+		super.draw(batch);
+		if(red)batch.setColor(c);
+		
+	}
 
-    
+    public void setRed(boolean red) {
+		this.red = red;
+	}
     
 }

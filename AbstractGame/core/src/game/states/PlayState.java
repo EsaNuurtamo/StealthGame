@@ -2,6 +2,8 @@ package game.states;
 
 import game.Content;
 import game.MyConst;
+import game.objects.Box;
+import game.objects.Bullet;
 import game.objects.Enemy;
 import game.objects.GameObject;
 import game.objects.Player;
@@ -21,6 +23,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -96,7 +99,7 @@ public class PlayState implements Screen{
 		Array<Body> bodies=MapBodyBuilder.buildTiles(map, world);
 		
 		rayHandler = new RayHandler(world); 	
-		rayHandler.setAmbientLight(0.05f, 0.05f, 0.05f, 0.95f);
+		rayHandler.setAmbientLight(0.05f, 0.05f, 0.05f, 0.4f);
 		rayHandler.setBlurNum(3);
 		MapBodyBuilder.buildLights(map, rayHandler);
 		
@@ -132,6 +135,7 @@ public class PlayState implements Screen{
         
         //draw textures here
         batch.begin();
+        	
             //draw objects
         	player.draw(batch);
         	for(GameObject obj:objects){
@@ -166,7 +170,7 @@ public class PlayState implements Screen{
         	GameObject obj=(GameObject)i.next();
         	
         	if(obj.isDestroyed()){
-        		
+        		obj.dispose();
         		i.remove();
         		world.destroyBody(obj.getBody());
         		
@@ -184,12 +188,31 @@ public class PlayState implements Screen{
             	
                 GameObject a = (GameObject)contact.getFixtureA().getBody().getUserData();
                 GameObject b = (GameObject)contact.getFixtureB().getBody().getUserData();
-                if(a instanceof Player ||b instanceof Player)return;
+                
                 if(a!=null&&a.getBody().isBullet()){
+                	
                 	a.setDying(true);
+                	
+                    if(b!=null&&b instanceof Player){
+                    	b.setDestroyed(true);
+                    }
+                    
+                    if(b!=null&&b instanceof Enemy){
+                    	((Bullet)a).setRed(true);
+                    	b.setHealth(b.getHealth()-1);
+                    	
+                    }
                 }
                 if(b!=null&&b.getBody().isBullet()){
                 	b.setDying(true);
+                	
+                	if(a!=null&&a instanceof Player){
+                    	a.setDestroyed(true);;
+                    }
+                	if(a!=null&&a instanceof Enemy){
+                		a.setHealth(a.getHealth()-1);
+                		((Bullet)b).setRed(true);
+                    }
                 }
                 
                 
@@ -221,6 +244,8 @@ public class PlayState implements Screen{
     		e.setPatrolPath(vect);
     		objects.add(e);
     	}
+    	Box b=new Box(this, new Vector2(player.getPosition().x, player.getPosition().y));
+    	objects.add(b);
     }
 
     @Override

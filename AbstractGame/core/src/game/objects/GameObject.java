@@ -5,6 +5,7 @@ package game.objects;
 import game.states.PlayState;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -25,14 +26,14 @@ public class GameObject{
 	protected Vector2 direction;
 	protected boolean dying;
 	//visuals
-    protected TextureRegion curTexture;
+    protected Sprite curTexture;
     protected float imgRotation;
     protected float imgWidth;
     protected float imgHeight;
     protected float radius;
     protected Animation animation;
     protected boolean destroyed;
-	
+	protected float health=5f;
     public void init(Vector2 position) {
     	// First we create a body definition
     	BodyDef bodyDef = new BodyDef();
@@ -63,6 +64,9 @@ public class GameObject{
     	circle.dispose();
     }
     
+    public void dispose(){
+    	
+    }
 
     public GameObject(PlayState state, Vector2 position) {
     	
@@ -141,5 +145,12 @@ public class GameObject{
     
     public float getRotation() {
 		return imgRotation;
+	}
+    
+    public void setHealth(float health) {
+		this.health = health;
+	}
+    public float getHealth() {
+		return health;
 	}
 }

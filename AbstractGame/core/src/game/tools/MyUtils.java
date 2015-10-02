@@ -1,5 +1,10 @@
 package game.tools;
 
+import game.objects.GameObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.math.Vector2;
 
 public class MyUtils {
@@ -9,5 +14,16 @@ public class MyUtils {
 			
 		}
 		return false;
+	}
+	
+	public static List<GameObject> objInRange(List<GameObject> all, Vector2 vect, float radius){
+		List<GameObject> list=new ArrayList<GameObject>();
+		for(GameObject obj:all){
+			
+			if(obj.getPosition().sub(vect).len()<radius){
+				list.add(obj);
+			}
+		}
+		return list;
 	}
 }

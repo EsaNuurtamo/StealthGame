@@ -4,6 +4,8 @@ import game.Content;
 import game.MyConst;
 import game.ai.AIType;
 import game.ai.EnemyState;
+import game.objects.guns.Gun;
+import game.objects.guns.Pistol;
 import game.states.PlayState;
 import game.tools.MapBodyBuilder;
 import box2dLight.ConeLight;
@@ -11,15 +13,22 @@ import box2dLight.ConeLight;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.utils.Timer.Task;
 
 public class Enemy extends GameObject implements Updatable{
 	private StateMachine<Enemy> stateMachine;
+	
+	//gun
+	private Gun gun;
+	private float shootInterval;
+	
 	//path
 	private Vector2[] patrolPath;
 	private Vector2[] path;
@@ -27,6 +36,8 @@ public class Enemy extends GameObject implements Updatable{
 	float tolerance=0.2f;
 	float pathLength=0;
 	float finderInterval=1f;
+	
+	
 	//ai
 	private AIType aiState=AIType.WAITING;
 	private float pathTimer=0;
@@ -44,15 +55,22 @@ public class Enemy extends GameObject implements Updatable{
     
 	public Enemy(PlayState state, Vector2 position) {
 		super(state, position);
-		curTexture=new TextureRegion(Content.atlas.findRegion("Enemy"));
-	dying=false;
+		curTexture=new Sprite(Content.atlas.findRegion("Enemy"));
+		gun= new Pistol(this);
+	    dying=false;
         speed=2;
         light=new ConeLight(state.getRayHandler(), 60, new Color(0.3f,0.3f,0.3f,0.4f),
     			9, 0, 0, imgRotation,25);
         light.setSoftnessLength(1f);
         light.setContactFilter((short)(MyConst.CATEGORY_PLAYER|MyConst.CATEGORY_BULLETS), (short)0,(short)(MyConst.MASK_PLAYER&MyConst.MASK_BULLETS));
         stateMachine = new DefaultStateMachine<Enemy>(this, EnemyState.LOOKOUT);
+        
     }
+	
+	@Override
+	public void dispose() {
+		light.remove();
+	}
 	
 	public void setPath(Vector2[] vertices) {
 		waypoint=0;
@@ -117,64 +135,11 @@ public class Enemy extends GameObject implements Updatable{
 		handleRotation(delta);
         light.setPosition(getPosition());
 		light.setDirection(imgRotation);
+		if(health<0)destroyed=true;
 	}
 	
 	
-	public void aiUpdate (float delta){	
-		if(seePlayer()){
-			
-			aiState=AIType.CHASING;
-			findPathToPlayer();
-			
-		}
-		
-		
-		switch(aiState){
-		
-			case WAITING:
-				speed=2;
-				if(patrolPath==null)return;
-				if(path==null){
-					findPathTo(patrolPath[0]);
-				}
-				if(getPosition().dst(patrolPath[0])<0.5f){
-					aiState=AIType.PATROL;
-					path=patrolPath;
-					waypoint=0;
-				}
-				
-					
-				walkOnPath();
-				
-				
-				break;
-			case PATROL:
-				speed=2;
-				walkOnPath();
-				break;
-			case CHASING:
-				speed=4;
-				
-						
-				if(finderInterval<0){
-					findPathToPlayer();
-					finderInterval=1f;
-					if(getPosition().dst(state.getPlayer().getPosition())<5){
-						findPathToPlayer();
-						finderInterval=1f;
-					}else{
-						
-						aiState=AIType.WAITING;
-						path=null;
-					}
-					
-				}
-				finderInterval-=delta;
-				walkOnPath();
-				break;
-			
-		}
-	}
+	
 	public boolean seePlayer(){
 		return light.contains(state.getPlayer().getPosition().x, state.getPlayer().getPosition().y);
 	}
@@ -377,4 +342,24 @@ public class Enemy extends GameObject implements Updatable{
    public float getReactionTimer() {
 	return reactionTimer;
 }
+   //TASKS
+   private class GiveUp extends Task{
+	   
+	   public GiveUp() {
+		
+	    }
+		@Override
+		public void run() {
+			 getStateMachine().changeState(EnemyState.LONG_SEARCH);
+		}
+	}
+   public Task giveUp(){
+	   
+	   return new GiveUp();
+	   
+   }
+   
+      
+   
+  
 }

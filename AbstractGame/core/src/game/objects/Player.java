@@ -8,6 +8,9 @@ import game.states.PlayState;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -16,36 +19,40 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class Player extends GameObject implements Updatable{
+	private Sprite testSprite;
 	private Gun curGun;
 	private GameObject picked=null;
 	public Player(PlayState state, Vector2 position) {
 		
 		super(state, position);
-		curTexture=new TextureRegion(Content.atlas.findRegion("Player"));
+		curTexture=new Sprite(Content.atlas.findRegion("Player"));
+		testSprite=new Sprite(curTexture);
+		testSprite.setColor(Color.RED);
 		curGun= new Pistol(this);
 		speed=4;
 	}
 	
+	@Override
+	public void draw(SpriteBatch batch) {
+		batch.draw(
+	           testSprite, body.getPosition().x-state.getCamera().position.x-imgWidth/2, body.getPosition().y-state.getCamera().position.y-imgHeight/2, 
+	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
+	        );
+	}
+	
 	public void update(float delta){
+		//update sub objects
 		curGun.update(delta);
 		Vector2 v=new Vector2();
 		if (Gdx.input.isKeyPressed(Keys.A) ) { 
 			 v.add(new Vector2(-50,0));
-		     
-		     
 		}
-
-		// apply right impulse, but only if max velocity is not reached yet
 		if (Gdx.input.isKeyPressed(Keys.D)) {
 			v.add(new Vector2(50,0));
-		    
 		}	
-		
 		if (Gdx.input.isKeyPressed(Keys.W) ) { 
 			v.add(new Vector2(0,50));
 		}
-
-		// apply right impulse, but only if max velocity is not reached yet
 		if (Gdx.input.isKeyPressed(Keys.S)) {
 			v.add(new Vector2(0,-50));
 		}
@@ -56,8 +63,8 @@ public class Player extends GameObject implements Updatable{
 		direction=new Vector2(Gdx.input.getX(),Gdx.graphics.getHeight()-Gdx.input.getY()).sub(mouse);
 		imgRotation=new Vector2(direction).angle();
 		
+		//shooting
 		if(Gdx.input.justTouched()){
-			
 			Vector2 c=Mouse.getScreenPos().sub(mouse);
 			curGun.shoot(c);
 		}
