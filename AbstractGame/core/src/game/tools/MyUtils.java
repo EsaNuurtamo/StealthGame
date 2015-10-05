@@ -1,11 +1,15 @@
 package game.tools;
 
+import game.MyConst;
 import game.objects.GameObject;
+import game.objects.Player;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.RayCastCallback;
 
 public class MyUtils {
 	public static boolean isReached(Vector2 v1, Vector2 v2, float tolerance){
@@ -14,6 +18,10 @@ public class MyUtils {
 			
 		}
 		return false;
+	}
+	
+	public static Vector2 toPix(Vector2 v){
+		return new Vector2(v.x/MyConst.PIX_IN_M*MyConst.VIEW_SCALE,v.y/MyConst.PIX_IN_M*MyConst.VIEW_SCALE);
 	}
 	
 	public static List<GameObject> objInRange(List<GameObject> all, Vector2 vect, float radius){
@@ -27,3 +35,5 @@ public class MyUtils {
 		return list;
 	}
 }
+
+

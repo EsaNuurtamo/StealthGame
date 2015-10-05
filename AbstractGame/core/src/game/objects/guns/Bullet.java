@@ -4,10 +4,12 @@
  * and open the template in the editor.
  */
 
-package game.objects;
+package game.objects.guns;
 
 import game.Content;
 import game.MyConst;
+import game.objects.GameObject;
+import game.objects.Updatable;
 import game.states.PlayState;
 
 import com.badlogic.gdx.graphics.Color;
@@ -36,6 +38,7 @@ public class Bullet extends GameObject implements Updatable{
     	imgHeight=(int)(fixture.getShape().getRadius()*2*5);
         speed=20;
         dying=false;
+        animation=Content.animations.get("Explotion");
     }
     
     @Override
@@ -91,7 +94,7 @@ public class Bullet extends GameObject implements Updatable{
 			animTime+=delta;
 			return;
 		}
-		body.setLinearVelocity(direction.cpy().limit(speed));
+		body.setLinearVelocity(direction.cpy().nor().scl(speed));
 		
 	}
 	@Override

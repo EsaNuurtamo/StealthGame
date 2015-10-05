@@ -15,10 +15,10 @@ public class DesktopLauncher {
 		config.width=MyConst.APP_WIDTH;
 		config.height=MyConst.APP_HEIGHT;
 		config.vSyncEnabled=true;
-		config.fullscreen=true;
+		config.fullscreen=false;
 		Settings settings = new Settings();
-        //TexturePacker.process(settings, "/Users/esa/Desktop/LIBGDX/AbstractGame/android/assets/images", 
-        //								  "/Users/esa/Desktop/LIBGDX/AbstractGame/android/assets/images", "game");
+        //TexturePacker.process(settings, "/Users/esa/Desktop/LIBGDX/StealthGame/AbstractGame/android/assets/images", 
+          								//"/Users/esa/Desktop/LIBGDX/StealthGame/AbstractGame/android/assets/images", "game");
 		new LwjglApplication(new Main(), config);
 	}
 }

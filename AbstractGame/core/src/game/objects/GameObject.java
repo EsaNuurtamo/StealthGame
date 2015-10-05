@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -79,6 +80,7 @@ public class GameObject{
     	destroyed=false;
     	body.setUserData(this);
     	dying=false;
+    	direction=new Vector2(0,1);
     }
     
     
@@ -88,9 +90,14 @@ public class GameObject{
     public void draw(SpriteBatch batch){
     	
         batch.draw(
+        		
             curTexture, body.getPosition().x-state.getCamera().position.x-imgWidth/2, body.getPosition().y-state.getCamera().position.y-imgHeight/2, 
             imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
         );
+    }
+    
+    public void drawShape(ShapeRenderer sr){
+    	sr.circle(body.getPosition().x, body.getPosition().y, radius, segments);
     }
     
     public Body getBody() {
@@ -153,4 +160,14 @@ public class GameObject{
     public float getHealth() {
 		return health;
 	}
+    
+    
+    
+    @Override
+    public boolean equals(Object obj) {
+    	if(!(obj instanceof GameObject))return false;
+    	GameObject go=(GameObject) obj;
+    	
+    	return go.imgRotation==imgRotation&&go.getPosition().equals(getPosition());
+    }
 }

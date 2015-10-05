@@ -1,10 +1,12 @@
 package game.objects;
 
 import game.Content;
+import game.MyConst;
 import game.input.Mouse;
 import game.objects.guns.Gun;
 import game.objects.guns.Pistol;
 import game.states.PlayState;
+import box2dLight.ConeLight;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -22,14 +24,21 @@ public class Player extends GameObject implements Updatable{
 	private Sprite testSprite;
 	private Gun curGun;
 	private GameObject picked=null;
+	
+	private ConeLight light;
 	public Player(PlayState state, Vector2 position) {
 		
 		super(state, position);
+		health=200;
 		curTexture=new Sprite(Content.atlas.findRegion("Player"));
 		testSprite=new Sprite(curTexture);
 		testSprite.setColor(Color.RED);
 		curGun= new Pistol(this);
 		speed=4;
+		light=new ConeLight(state.getRayHandler(), 60, new Color(0.3f,0.3f,0.3f,0.4f),
+    			9, 0, 0, imgRotation,25);
+        light.setSoftnessLength(1f);
+        light.setContactFilter((short)(MyConst.CATEGORY_PLAYER|MyConst.CATEGORY_BULLETS), (short)0,(short)(MyConst.MASK_PLAYER&MyConst.MASK_BULLETS));
 	}
 	
 	@Override
@@ -41,6 +50,11 @@ public class Player extends GameObject implements Updatable{
 	}
 	
 	public void update(float delta){
+		if(health<=0){
+			
+			return;
+		}
+			
 		//update sub objects
 		curGun.update(delta);
 		Vector2 v=new Vector2();
@@ -61,13 +75,22 @@ public class Player extends GameObject implements Updatable{
 		
 		Vector2 mouse=new Vector2(Gdx.graphics.getWidth()/2,Gdx.graphics.getHeight()/2);
 		direction=new Vector2(Gdx.input.getX(),Gdx.graphics.getHeight()-Gdx.input.getY()).sub(mouse);
-		imgRotation=new Vector2(direction).angle();
+		imgRotation=direction.angle();
 		
 		//shooting
-		if(Gdx.input.justTouched()){
+		if(Gdx.input.isButtonPressed(0)&&Gdx.input.justTouched()){
 			Vector2 c=Mouse.getScreenPos().sub(mouse);
 			curGun.shoot(c);
 		}
+		if(Gdx.input.isButtonPressed(1)&&Gdx.input.justTouched()){
+			state.addObj(new Box(state,Mouse.getWorldPos(state.getViewport())));
+		}
+		if(Gdx.input.isKeyJustPressed(Keys.F)){
+			light.setActive(!light.isActive());
+		}
+		
+		light.setPosition(getPosition());
+		light.setDirection(direction.angle());
 	}
 	
 	@Override

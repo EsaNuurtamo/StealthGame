@@ -17,9 +17,9 @@ public class Pistol extends Gun{
 
     public Pistol(GameObject shooter) {
         super(shooter);
-        fireRate=0.0f;
+        fireRate=0f;
         reloadtime=2f;
-        clipSize=10;
+        clipSize=50;
         inClip=clipSize;
         ammo=500;
     }

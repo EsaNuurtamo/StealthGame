@@ -2,7 +2,7 @@
 package game.objects.guns;
 
 
-import game.objects.Bullet;
+import game.MyConst;
 import game.objects.GameObject;
 import box2dLight.Light;
 
@@ -36,6 +36,7 @@ public abstract class Gun{
     public void update(float delta){
         if(empty){
             reloadTimer+=delta;
+            
         }else if(!ready){
             fireRateTimer+=delta;
         }
@@ -62,16 +63,24 @@ public abstract class Gun{
         
         
     }
-    
+  //offse from recoil
+  		
+    public void aiShoot(Vector2 direction,float offset){
+    	float turn=(float) MyConst.RAND.nextGaussian()*offset;
+    	
+    	shoot(direction.cpy().rotate(turn));
+    	
+    }
     public void shoot(Vector2 direction){
         
         
         //ampuminen
-        if(ready){
+        if(ready&&!empty){
             spawnBullet(direction);
             inClip--;
             if(inClip<=0){
                 empty=true;
+                
             }
             ready=false;
         }
@@ -87,13 +96,14 @@ public abstract class Gun{
     }
     
     public void spawnBullet(Vector2 direction){
-    	Bullet b=new Bullet(shooter.getState(), shooter.getPosition().add(shooter.getDirection().limit(shooter.getRadius()+0.2f)));
-    	b.setDirection(direction);
-    	b.setImgRotation(direction.angle()-90);
+    	Bullet b=new Bullet(shooter.getState(), shooter.getPosition().cpy().add(shooter.getDirection().cpy().limit(shooter.getRadius()+0.2f)));
     	
+    	b.setDirection(direction.nor());
+    	b.setImgRotation(direction.angle()-90);
+    	System.out.println("img: "+(direction.angle()-90 )+" dir: "+direction.angle());
     	
     	//b.getBody().setLinearVelocity(direction.cpy().limit(10));
-    	shooter.getState().getObjects().add(b);
+    	shooter.getState().addObj(b);
     	
     }
     

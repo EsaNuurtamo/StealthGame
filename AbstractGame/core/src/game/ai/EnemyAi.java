@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class EnemyAi implements Updatable{
 
-	private Queue<Task> tasks = new PriorityQueue<Task>();
+	private Queue<Action> tasks = new PriorityQueue<Action>();
 	//path
 	private Vector2[] patrolPath;
 	private Vector2[] path;

@@ -21,7 +21,9 @@ public class Mouse {
 	public static Vector2 getWorldPos(Viewport port){
 		//float x=(Mouse.getScreenPos().x-Gdx.graphics.getWidth()/2)/(MyConst.PIX_IN_M)*MyConst.VIEW_SCALE+cam.position.x;
 		//float y=(Mouse.getScreenPos().y-Gdx.graphics.getHeight()/2)/(MyConst.PIX_IN_M)*MyConst.VIEW_SCALE+cam.position.y;
-		return port.unproject(Mouse.getScreenPos());
+		
+		Vector2 v= getScreenPos();
+		return port.unproject(v.set(v.x, MyConst.APP_HEIGHT-v.y));
 		
 	}
 	

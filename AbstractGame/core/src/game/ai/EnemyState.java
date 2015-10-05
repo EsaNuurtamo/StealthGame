@@ -119,6 +119,10 @@ public enum EnemyState implements State<Enemy>{
         @Override
         public void update(Enemy enemy) {
         	//change state conditions
+        	if(enemy.getGiveUpTimer()>7){
+        		enemy.getStateMachine().changeState(LONG_SEARCH);
+        		enemy.setGiveUpTimer(0);
+        	}
         	if(enemy.seePlayer()){
         		
 				enemy.getStateMachine().changeState(CHASING);
@@ -142,11 +146,11 @@ public enum EnemyState implements State<Enemy>{
 			enemy.getLight().setColor(new Color(1f,1f,0,0.4f));
 			enemy.findPathToPlayer();
 			enemy.setPathTimer(3);
-			
+			enemy.setShootTimer(0);
 			enemy.setSpeed(3);
 			
 			//timed statechange
-			Timer.schedule(enemy.giveUp(), 4f);
+			enemy.setGiveUpTimer(0);
 			
 		}
     },
@@ -194,35 +198,44 @@ public enum EnemyState implements State<Enemy>{
     CHASING() {
         @Override
         public void update(Enemy enemy) {
-        	if(enemy.getReactionTimer()<0.3f){
-        		return;
+        	Vector2 v=enemy.getState().getPlayer().getPosition().cpy().sub(enemy.getPosition()).nor().scl(enemy.getSpeed());
+        	if(enemy.getPosition().dst(enemy.getState().getPlayer().getPosition())>3)enemy.getBody().setLinearVelocity(v);
+    		enemy.setTargetRotation(v.angle());
+        	if(enemy.getShootTimer()>0.2f){
+        		enemy.setShootTimer(enemy.getShootTimer()-0.2f);
+        		enemy.shootPlayer();
         	}
+        	
         	if(!enemy.seePlayer()){
         		enemy.getStateMachine().changeState(SEARCH);
         	}
-        	Vector2 v=enemy.getState().getPlayer().getPosition().cpy().sub(enemy.getPosition()).nor().scl(enemy.getSpeed());
-    		enemy.getBody().setLinearVelocity(v);
-    		enemy.setImgRotation(v.angle());
+        	//if(enemy.getPosition().dst(enemy.getState().getPlayer().getPosition())<3)return;
+        	
         }
 
 		@Override
 		public void enter(Enemy enemy) {
 			
+			
 			enemy.setReactionTimer(0);
 			enemy.getLight().setColor(new Color(1f,0,0,0.4f));
 			enemy.setSpeed(3);
-			
+			enemy.setShootTimer(0);
 			//all near enemies join on search
 			//tee vihulle ringalarm joka vaihtaa playstateen tilaksi alarmed ja hoida siellä tämä
 			for(GameObject obj:MyUtils.objInRange(enemy.getState().getObjects(), enemy.getPosition(), 15f)){
-				if(obj instanceof Enemy&&!((Enemy)obj).getStateMachine().isInState(CHASING)&&!((Enemy)obj).getStateMachine().isInState(SEARCH)){
-					((Enemy) obj).getStateMachine().changeState(SEARCH);
+				if(obj instanceof Enemy&&!((Enemy)obj).getStateMachine().isInState(CHASING)&&!((Enemy)obj).getStateMachine().isInState(SEARCH)
+				   ){
+					//((Enemy) obj).getStateMachine().changeState(SEARCH);
 				}
 			}
 			
 		}
     };
 
+	private void reset(Enemy enemy){
+		
+	}
 	
 
 	@Override

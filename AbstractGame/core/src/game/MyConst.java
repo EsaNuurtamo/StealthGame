@@ -1,7 +1,9 @@
 package game;
 
+import java.util.Random;
+
 public class MyConst {
-	
+	public static final Random RAND=new Random();
 	public static final int APP_WIDTH = 1920;
     public static final int APP_HEIGHT = 1080;
     public static final float VIEW_SCALE=1f;

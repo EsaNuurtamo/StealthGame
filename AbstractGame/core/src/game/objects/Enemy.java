@@ -8,26 +8,37 @@ import game.objects.guns.Gun;
 import game.objects.guns.Pistol;
 import game.states.PlayState;
 import game.tools.MapBodyBuilder;
+import game.tools.VisibleCallback;
 import box2dLight.ConeLight;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.RayCastCallback;
 import com.badlogic.gdx.utils.Timer.Task;
 
 public class Enemy extends GameObject implements Updatable{
+	private Vector2 start=new Vector2();
+	private Vector2 target=new Vector2();
 	private StateMachine<Enemy> stateMachine;
-	
+	private GameObject objectSeen;
+	private float visionLen=10;
+	private Player player;
+	private float FOV=95f;
 	//gun
 	private Gun gun;
-	private float shootInterval;
+	private float shootTimer;
 	
 	//path
 	private Vector2[] patrolPath;
@@ -47,6 +58,7 @@ public class Enemy extends GameObject implements Updatable{
 	private float reactionTimer=0;
 	//flashlight
 	private ConeLight light;
+	private VisibleCallback visibility;
 	
 	private boolean dying;
     
@@ -55,39 +67,31 @@ public class Enemy extends GameObject implements Updatable{
     
 	public Enemy(PlayState state, Vector2 position) {
 		super(state, position);
+		direction=new Vector2(0,1);
 		curTexture=new Sprite(Content.atlas.findRegion("Enemy"));
 		gun= new Pistol(this);
+		shootTimer=0f;
 	    dying=false;
         speed=2;
         light=new ConeLight(state.getRayHandler(), 60, new Color(0.3f,0.3f,0.3f,0.4f),
     			9, 0, 0, imgRotation,25);
         light.setSoftnessLength(1f);
         light.setContactFilter((short)(MyConst.CATEGORY_PLAYER|MyConst.CATEGORY_BULLETS), (short)0,(short)(MyConst.MASK_PLAYER&MyConst.MASK_BULLETS));
-        stateMachine = new DefaultStateMachine<Enemy>(this, EnemyState.LOOKOUT);
         
+        stateMachine = new DefaultStateMachine<Enemy>(this, EnemyState.LOOKOUT);
+        visibility=new VisibleCallback(state.getPlayer());
+        player=state.getPlayer();
     }
 	
 	@Override
 	public void dispose() {
 		light.remove();
+		
 	}
 	
 	public void setPath(Vector2[] vertices) {
 		waypoint=0;
-		/*float m=0;
-		Vector2 last=null;
-		for(int i=0; i<vertices.length;i++){
-			if(last!=null){
-				m+=vertices[i].dst(last);
-			}else{
-				m+=vertices[i].dst(vertices[vertices.length-1]);
-			}
-			last=vertices[i];
-		}
-		
-	    pathLength=m;*/
 		path = vertices;
-		
 	}
 	
 	@Override
@@ -126,22 +130,57 @@ public class Enemy extends GameObject implements Updatable{
 	
 	@Override
 	public void update(float delta) {
+		
 		pathTimer+=delta;
 		giveUpTimer+=delta;
 		lookoutTimer+=delta;
 		turnTimer+=delta;
 		reactionTimer+=delta;
+		shootTimer+=delta;
 		stateMachine.update();
+		gun.update(delta);
 		handleRotation(delta);
+		imgRotation=direction.angle();
         light.setPosition(getPosition());
 		light.setDirection(imgRotation);
+		
 		if(health<0)destroyed=true;
+	}
+	
+	public void shoot(){
+		System.out.println();
+		//take advance
+		//Vector2 meetPoint=player.getPosition().cpy().add(player.direction.cpy().nor().scl(player.speed/20*player.speed));
+		//Vector2 apu=meetPoint.cpy().sub(getPosition());
+		gun.aiShoot(direction,0f);
+	}
+	
+	public void shootPlayer(){
+		targetRotation=state.getPlayer().getPosition().cpy().sub(getPosition()).angle();
+		shoot();
 	}
 	
 	
 	
 	public boolean seePlayer(){
-		return light.contains(state.getPlayer().getPosition().x, state.getPlayer().getPosition().y);
+		if(direction.len()==0)return false;
+		if(player.getPosition().dst(getPosition())>7)return false;
+		
+		
+		visibility.setVisible(true);
+		state.getWorld().rayCast(visibility, getPosition(),state.getPlayer().getPosition());
+		
+		return 
+	    (visibility.isVisible())&&//raycasting finds player
+		(state.isInLight()||light.contains(state.getPlayer().getPosition().x, state.getPlayer().getPosition().y))&&//is player in any light
+		(Math.abs(player.getPosition().cpy().sub(getPosition()).angle()-direction.angle()))<=FOV/2;///is player in FOV
+		
+		
+		
+	}
+	@Override
+	public void drawShape(ShapeRenderer sr) {
+		sr.rectLine(start, target, 0.2f);
 	}
 	
 	public int getWaypoint() {
@@ -255,34 +294,28 @@ public class Enemy extends GameObject implements Updatable{
 	
 	public void handleRotation(float delta){
 		float angle=0;
-		float r=targetRotation-imgRotation;
-			if(r>0){
-				if(r>180){
-					angle=360-r;
-					imgRotation-=angle*delta*6;
-				}else{
-					imgRotation+=r*delta*6;
-				}
+		float r=targetRotation-direction.angle();
+		if(r==0){
+			
+			return;
+		}
+		if(r>0){
+			if(r>180){
+				angle=360-r;
+				direction.rotate(-angle*delta*6);
 			}else{
+				direction.rotate(r*delta*6);
 				
-				if(r<-180){
-					angle=360-r;
-					imgRotation+=angle*delta*6;
-				}else{
-					imgRotation+=r*delta*6;
-				}
 			}
-			if(imgRotation>360){
-				imgRotation-=360;
+		}else{
+			
+			if(r<-180){
+				angle=360+r;
+				direction.rotate(+angle*delta*6);
+			}else{
+				direction.rotate(r*delta*6);
 			}
-			if(imgRotation<0){
-				imgRotation=360+imgRotation;
-			}
-			
-			
-			
-			
-		
+		}
 	}
 	
 	
@@ -359,7 +392,14 @@ public class Enemy extends GameObject implements Updatable{
 	   
    }
    
-      
-   
-  
+    public float getShootTimer() {
+		return shootTimer;
+	}public void setShootTimer(float shootTimer) {
+		this.shootTimer = shootTimer;
+	}  
+    public float getTargetRoation(){
+    	return targetRotation;
+    }
+    
+ 
 }

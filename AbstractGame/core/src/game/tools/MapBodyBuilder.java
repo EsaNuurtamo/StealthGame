@@ -1,6 +1,8 @@
 package game.tools;
 
 import game.MyConst;
+import game.objects.Wall;
+import game.states.PlayState;
 
 import java.util.List;
 
@@ -97,7 +99,7 @@ public class MapBodyBuilder {
         return bodies;
     }
     
-    public static void buildLights(Map map, RayHandler ray){
+    public static void buildLights(Map map, RayHandler ray,PlayState state){
     	MapLayer tl=map.getLayers().get("Lights");
     	for(MapObject obj: tl.getObjects()){
     		Ellipse c=((EllipseMapObject)obj).getEllipse();
@@ -106,7 +108,7 @@ public class MapBodyBuilder {
     		PointLight point=new PointLight(ray, dist*50, new Color(0.2f,0.2f,0.2f,0.1f), (dist+2), c.x/ppt, c.y/ppt);
     		point.setSoftnessLength(1f);
     		point.setStaticLight(true);
-    		
+    		state.getLights().add(point);
     		PointLight p=new PointLight(ray, dist*50, new Color(0.3f,0.3f,0.3f,0.3f), dist, c.x/ppt, c.y/ppt);
     		p.setSoftnessLength(1f);
     		
@@ -124,7 +126,7 @@ public class MapBodyBuilder {
     	return paths;
     }
     
-    public static Array<Body> buildTiles(Map map, World world){
+    public static Array<Body> buildTiles(Map map, World world, PlayState state){
     	Array<Body> bodies = new Array<Body>();
     	TiledMapTileLayer tl=(TiledMapTileLayer)map.getLayers().get("Blocked");
         for (int i=0; i<tileNum;i++){
@@ -148,10 +150,10 @@ public class MapBodyBuilder {
                 fixtureDef.density=1;
                 fixtureDef.filter.categoryBits=MyConst.CATEGORY_SCENERY;
                 body.createFixture(fixtureDef);
-                
+                body.setUserData(new Wall(state,new Vector2(r.x,r.y)));
 
                 bodies.add(body);
-
+                
                 shape.dispose();
                 
             }
