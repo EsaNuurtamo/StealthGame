@@ -22,18 +22,19 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class Player extends GameObject implements Updatable{
 	private Sprite testSprite;
-	private Gun curGun;
+	private Gun gun;
 	private GameObject picked=null;
 	
 	private ConeLight light;
 	public Player(PlayState state, Vector2 position) {
 		
 		super(state, position);
+		maxHealth=200;
 		health=200;
 		curTexture=new Sprite(Content.atlas.findRegion("Player"));
 		testSprite=new Sprite(curTexture);
 		testSprite.setColor(Color.RED);
-		curGun= new Pistol(this);
+		gun= new Pistol(this);
 		speed=4;
 		light=new ConeLight(state.getRayHandler(), 60, new Color(0.3f,0.3f,0.3f,0.4f),
     			9, 0, 0, imgRotation,25);
@@ -44,7 +45,7 @@ public class Player extends GameObject implements Updatable{
 	@Override
 	public void draw(SpriteBatch batch) {
 		batch.draw(
-	           testSprite, body.getPosition().x-state.getCamera().position.x-imgWidth/2, body.getPosition().y-state.getCamera().position.y-imgHeight/2, 
+	           testSprite, body.getPosition().x-imgWidth/2, body.getPosition().y-imgHeight/2, 
 	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
 	        );
 	}
@@ -56,7 +57,7 @@ public class Player extends GameObject implements Updatable{
 		}
 			
 		//update sub objects
-		curGun.update(delta);
+		gun.update(delta);
 		Vector2 v=new Vector2();
 		if (Gdx.input.isKeyPressed(Keys.A) ) { 
 			 v.add(new Vector2(-50,0));
@@ -79,11 +80,11 @@ public class Player extends GameObject implements Updatable{
 		
 		//shooting
 		if(Gdx.input.isButtonPressed(0)&&Gdx.input.justTouched()){
-			Vector2 c=Mouse.getScreenPos().sub(mouse);
-			curGun.shoot(c);
+			Vector2 c=Mouse.getWorldPos(state.getCamera()).sub(getPosition());
+			gun.shoot(c);
 		}
 		if(Gdx.input.isButtonPressed(1)&&Gdx.input.justTouched()){
-			state.addObj(new Box(state,Mouse.getWorldPos(state.getViewport())));
+			state.addObj(new Box(state,Mouse.getWorldPos(state.getCamera())));
 		}
 		if(Gdx.input.isKeyJustPressed(Keys.F)){
 			light.setActive(!light.isActive());
@@ -125,7 +126,10 @@ public class Player extends GameObject implements Updatable{
 	}
 
 	
-
 	
+
+	public Gun getGun() {
+		return gun;
+	}
 
 }

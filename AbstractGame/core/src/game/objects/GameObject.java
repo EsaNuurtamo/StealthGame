@@ -35,6 +35,8 @@ public class GameObject{
     protected Animation animation;
     protected boolean destroyed;
 	protected float health=5f;
+	protected float maxHealth=5f;
+	
     public void init(Vector2 position) {
     	// First we create a body definition
     	BodyDef bodyDef = new BodyDef();
@@ -65,6 +67,8 @@ public class GameObject{
     	circle.dispose();
     }
     
+    
+    
     public void dispose(){
     	
     }
@@ -91,13 +95,13 @@ public class GameObject{
     	
         batch.draw(
         		
-            curTexture, body.getPosition().x-state.getCamera().position.x-imgWidth/2, body.getPosition().y-state.getCamera().position.y-imgHeight/2, 
+            curTexture, body.getPosition().x-imgWidth/2, body.getPosition().y-imgHeight/2, 
             imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
         );
     }
     
     public void drawShape(ShapeRenderer sr){
-    	sr.circle(body.getPosition().x, body.getPosition().y, radius, segments);
+    	sr.circle(body.getPosition().x, body.getPosition().y, radius);
     }
     
     public Body getBody() {
@@ -161,7 +165,9 @@ public class GameObject{
 		return health;
 	}
     
-    
+    public float getMaxHealth() {
+		return maxHealth;
+	}
     
     @Override
     public boolean equals(Object obj) {

@@ -90,6 +90,7 @@ public class PlayState implements Screen{
         RayHandler.setGammaCorrection(true);
 		RayHandler.useDiffuseLight(true);
 		Content.loadAnimations();
+		MyConst.createSkin();
 		
     }
     
@@ -130,44 +131,57 @@ public class PlayState implements Screen{
 	    camera.update();
     }
     
+    public boolean isInView(Vector2 vect){
+    	if(Math.abs(player.getPosition().x-vect.x)>camera.viewportWidth/2||
+     		   Math.abs(player.getPosition().y-vect.y)>camera.viewportHeight/2)
+     	{
+    		return false;
+     	}else{
+     		return true;
+     	}
+    	
+    }
+    
     public void drawComponents(float delta){
     	mapRenderer.render();
         debugRenderer.render(world, camera.combined);
         
+        //----------------Sprites--------------------------------
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        	
-            //draw objects
-        	player.draw(batch);
-        	for(GameObject obj:objects){
-        		if(Math.abs(player.getPosition().x-obj.getPosition().x)>camera.viewportWidth/2||
-        		   Math.abs(player.getPosition().y-obj.getPosition().y)>camera.viewportHeight/2)
-        		{
-        			continue;
-        		}
-            	obj.draw(batch);
-            }
-        	
-        	
-        batch.end();
-        
-        //shapes
+        player.draw(batch);
+    	for(GameObject obj:objects){
+    		if(!isInView(obj.getPosition()))
+    		{
+    			continue;
+    		}
+        	obj.draw(batch);
+        }
+    	batch.end();
+        //-------------------------------------------------------
         
         
+        //draw lights
+        rayHandler.setCombinedMatrix(camera.combined);
+        rayHandler.updateAndRender();
+        
+        
+        
+        //----------------Shapes--------------------------------
+        srenderer.setProjectionMatrix(camera.combined);
         srenderer.begin(ShapeType.Filled);
-	        srenderer.setColor(Color.WHITE);
-	        
-	        
-	        for(GameObject obj:objects){
-        		if(Math.abs(player.getPosition().x-obj.getPosition().x)>camera.viewportWidth/2||
-        		   Math.abs(player.getPosition().y-obj.getPosition().y)>camera.viewportHeight/2)
-        		{
-        			continue;
-        		}
-            	obj.drawShape(srenderer);
-            }
+        srenderer.setColor(Color.WHITE);
+        for(GameObject obj:objects){
+        	if(!isInView(obj.getPosition()))
+    		{
+    			continue;
+    		}
+        	obj.drawShape(srenderer);
+        }
         srenderer.end();
+        //------------------------------------------------------
         
-        hud.draw(srenderer, batch);
+        hud.draw();
     	
     }
     
@@ -182,16 +196,16 @@ public class PlayState implements Screen{
         
         camera.position.set(player.getPosition(), camera.position.z);
 	    camera.update();
-	    srenderer.setProjectionMatrix(camera.combined);
-        
+	    
+	    
         mapRenderer.setView(camera);
         
+       
         
         drawComponents(delta); 
         updateObjects(delta);
 	    
-        rayHandler.setCombinedMatrix(camera.combined);
-        rayHandler.updateAndRender();
+        
 	    
 	    world.step(delta, 6, 2);
 	    world.clearForces();
@@ -377,5 +391,13 @@ public class PlayState implements Screen{
    public boolean isInLight(){
 	   return inLight;
    }
+   
+   public SpriteBatch getBatch() {
+	return batch;
+}
+   
+   public ShapeRenderer getSrenderer() {
+	return srenderer;
+}
         
 }

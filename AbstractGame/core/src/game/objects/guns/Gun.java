@@ -100,7 +100,7 @@ public abstract class Gun{
     	
     	b.setDirection(direction.nor());
     	b.setImgRotation(direction.angle()-90);
-    	System.out.println("img: "+(direction.angle()-90 )+" dir: "+direction.angle());
+   
     	
     	//b.getBody().setLinearVelocity(direction.cpy().limit(10));
     	shooter.getState().addObj(b);
