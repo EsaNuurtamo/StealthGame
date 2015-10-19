@@ -3,6 +3,7 @@ package game;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -14,6 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 
 public class MyConst {
+	public static boolean DEBUGGING=true;
+	
 	public static final Random RAND=new Random();
 	public static final int APP_WIDTH = 1920;
     public static final int APP_HEIGHT = 1080;
@@ -23,16 +26,24 @@ public class MyConst {
     public static final float ORG_TILE_WIDTH=64;
     public static final float TILES_IN_M=1f;
     
-    public static final short CATEGORY_PLAYER = 1;  
+    public static final short CATEGORY_PLAYER = 1; 
     public static final short CATEGORY_BULLETS = 2; 
     public static final short CATEGORY_SCENERY = 4;
     public static final short CATEGORY_ENEMY = 8;
     public static final short MASK_BULLETS=CATEGORY_ENEMY|CATEGORY_PLAYER|CATEGORY_SCENERY;
+    
     public static final short MASK_PLAYER=CATEGORY_ENEMY|CATEGORY_SCENERY|CATEGORY_BULLETS;
+    public static final Sound PISTOLSOUND = Gdx.audio.newSound(Gdx.files.internal("sound/Pistol.wav"));
+    
+    public static float volumeSFX=1;
+    public static float volumeMusic=1;
     
 public static Skin skin;
+public static BitmapFont font =new BitmapFont();
     
     public static void createSkin(){
+    	font=new BitmapFont();
+    	font.setScale(0.01f);
         skin = new Skin();
 	
         //TEXTURES///////
@@ -100,4 +111,6 @@ public static Skin skin;
         /////////////////////////////////////////////
 	            
     }
+    
+    
 }

@@ -7,7 +7,12 @@
 package game.objects.guns;
 
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Vector2;
+
+import game.Content;
 import game.objects.GameObject;
+import game.objects.Player;
 
 /**
  *
@@ -19,9 +24,17 @@ public class Pistol extends Gun{
         super(shooter);
         fireRate=0f;
         reloadtime=2f;
-        clipSize=50;
+        clipSize=15;
         inClip=clipSize;
-        ammo=500;
+        ammo=5*clipSize;
+        shootSFX=Content.getSound("shootPistol");
+        reloadSFX=Content.getSound("reloadPistol");
+    }
+    
+    @Override
+    public void pullTrigger(Vector2 direction) {
+    	if(!Gdx.input.justTouched()&&shooter instanceof Player)return;
+    	super.pullTrigger(direction);
     }
     
 }

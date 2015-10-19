@@ -28,6 +28,7 @@ public enum EnemyState implements State<Enemy>{
         public void update(Enemy enemy) {
         	
         	if(enemy.seePlayer()){
+        		
 				enemy.getStateMachine().changeState(CHASING);
 			}
 			if(enemy.getPatrolPath()!=null&&enemy.getLookoutTimer()>4){
@@ -51,7 +52,7 @@ public enum EnemyState implements State<Enemy>{
 
 		@Override
 		public void enter(Enemy enemy) {
-			
+			enemy.getLight().setColor(Color.CYAN);
 			enemy.setLookoutTimer(0);
 			
 			
@@ -74,17 +75,21 @@ public enum EnemyState implements State<Enemy>{
         	if(enemy.seePlayer()){
 				enemy.getStateMachine().changeState(CHASING);
 			}
-        	if(MyUtils.isReached(enemy.getPosition(), enemy.getPatrolPath()[0], 0.2f)){
+        	if(MyUtils.isReached(enemy.getPosition(), enemy.getPatrolPath()[0], 0.5f)){
         		
         		enemy.getStateMachine().changeState(PATROL);
         	}
-        	
+        	if(enemy.getPathfindTimer()>3f){
+        		enemy.findPathTo(enemy.getPatrolPath()[0]);
+        		enemy.setPathfindTimer(0);
+        	}
         	enemy.walkOnPath();
         }
 
 		@Override
 		public void enter(Enemy enemy)
 		{
+			enemy.setPathfindTimer(0);
 			enemy.getLight().setColor(new Color(0,0,1f,0.4f));
 			enemy.setSpeed(1);
 			Vector2 patrolStart=enemy.getPatrolPath()[0];
@@ -107,6 +112,8 @@ public enum EnemyState implements State<Enemy>{
 		@Override
 		public void enter(Enemy enemy)
 		{
+			enemy.getLight().setColor(Color.PINK);;
+			
 			enemy.setPath(enemy.getPatrolPath());
 			enemy.setSpeed(1);
 		}
@@ -143,6 +150,7 @@ public enum EnemyState implements State<Enemy>{
 
 		@Override
 		public void enter(Enemy enemy) {
+			
 			enemy.getLight().setColor(new Color(1f,1f,0,0.4f));
 			enemy.findPathToPlayer();
 			enemy.setPathTimer(3);
@@ -186,6 +194,7 @@ public enum EnemyState implements State<Enemy>{
 
 		@Override
 		public void enter(Enemy enemy) {
+			
 			enemy.getLight().setColor(new Color(1f,1f,0,0.4f));
 			enemy.findPathToPlayer();
 			enemy.setPathTimer(3);
@@ -201,12 +210,14 @@ public enum EnemyState implements State<Enemy>{
         	Vector2 v=enemy.getState().getPlayer().getPosition().cpy().sub(enemy.getPosition()).nor().scl(enemy.getSpeed());
         	if(enemy.getPosition().dst(enemy.getState().getPlayer().getPosition())>3)enemy.getBody().setLinearVelocity(v);
     		enemy.setTargetRotation(v.angle());
+    	
         	if(enemy.getShootTimer()>0.2f){
         		enemy.setShootTimer(enemy.getShootTimer()-0.2f);
         		enemy.shootPlayer();
         	}
         	
         	if(!enemy.seePlayer()){
+        		//System.out.println("nosee");
         		enemy.getStateMachine().changeState(SEARCH);
         	}
         	//if(enemy.getPosition().dst(enemy.getState().getPlayer().getPosition())<3)return;
@@ -223,17 +234,19 @@ public enum EnemyState implements State<Enemy>{
 			enemy.setShootTimer(0);
 			//all near enemies join on search
 			//tee vihulle ringalarm joka vaihtaa playstateen tilaksi alarmed ja hoida siellä tämä
-			for(GameObject obj:MyUtils.objInRange(enemy.getState().getObjects(), enemy.getPosition(), 15f)){
+			for(GameObject obj:MyUtils.objInRange(enemy.getState().getObjects(), enemy.getPosition(), 5f)){
 				if(obj instanceof Enemy&&!((Enemy)obj).getStateMachine().isInState(CHASING)&&!((Enemy)obj).getStateMachine().isInState(SEARCH)
 				   ){
-					//((Enemy) obj).getStateMachine().changeState(SEARCH);
+					((Enemy) obj).getStateMachine().changeState(SEARCH);
 				}
 			}
 			
 		}
     };
 
-	private void reset(Enemy enemy){
+	@Override
+	public void enter(Enemy entity) {
+		// TODO Auto-generated method stub
 		
 	}
 	

@@ -4,6 +4,7 @@ import game.MyConst;
 import game.objects.Updatable;
 import game.states.PlayState;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -11,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 
 public class Hud implements Updatable{
 	
@@ -58,6 +60,9 @@ public class Hud implements Updatable{
     	
     	batch.begin();
     		drawGunAndAmmo();
+    		drawFps();
+    		drawPos();
+    		drawNotifications();
     	batch.end();
     }
     
@@ -86,18 +91,30 @@ public class Hud implements Updatable{
 	}
 	
 	public void drawGunAndAmmo(){
-		//font.draw(batch, state.getPlayer().getGun().getClass().getName(), 10, MyConst.APP_HEIGHT-50);
-		font.draw(batch, state.getPlayer().getGun().getInClip()+"/"+state.getPlayer().getGun().getAmmo(), 130, MyConst.APP_HEIGHT-50);
+		font.draw(batch, state.getPlayer().getGun().getClass().getSimpleName(), 10, MyConst.APP_HEIGHT-50);
+		font.draw(batch, state.getPlayer().getGun().getInClip()+"/"+state.getPlayer().getGun().getAmmo(), 170, MyConst.APP_HEIGHT-50);
 	}
 	
 	public void drawInventory(){
 		
 	}
 	
+	public void drawFps(){
+		font.draw(batch, ""+Gdx.graphics.getFramesPerSecond(), MyConst.APP_WIDTH-40, MyConst.APP_HEIGHT-20);
+	}
+	
 	public void drawMinimap(){
 		
 	}
-
+	public void drawPos(){
+		//Vector3 v=state.getCamera().project(new Vector3(state.getPlayer().getPosition().x,state.getPlayer().getPosition().y,0));
+		
+		//font.draw(batch, state.getPlayer().getPosition().x+" "+state.getPlayer().getPosition().y, v.x,v.y);
+	}
+	
+	public void drawNotifications(){
+		if(state.getPlayer().getHealth()<=0)MyConst.skin.getFont("titleFont").draw(batch, "GAME OVER", 400,400);
+	}
 	
 
 }

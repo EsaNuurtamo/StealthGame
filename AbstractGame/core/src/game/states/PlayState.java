@@ -2,13 +2,17 @@ package game.states;
 
 import game.Content;
 import game.MyConst;
+import game.ai.EnemyState;
 import game.gui.Hud;
+import game.input.Mouse;
 import game.objects.Box;
+import game.objects.Bullet;
 import game.objects.Enemy;
 import game.objects.GameObject;
+import game.objects.Pickable;
 import game.objects.Player;
 import game.objects.Updatable;
-import game.objects.guns.Bullet;
+import game.tools.Contacts;
 import game.tools.MapBodyBuilder;
 
 import java.util.ArrayList;
@@ -34,6 +38,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -75,7 +80,7 @@ public class PlayState implements Screen{
     private List<Vector2> linjat=new ArrayList<Vector2>();
     //Gamehandler;
     private Game game;
-   
+    private float camOffset=0;
     //Box2d
     private World world=new World(new Vector2(0, 0), true);
     private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
@@ -91,13 +96,16 @@ public class PlayState implements Screen{
 		RayHandler.useDiffuseLight(true);
 		Content.loadAnimations();
 		MyConst.createSkin();
-		
+		Content.loadAll();
+		camOffset=0;
     }
     
     @Override
     public void show() {
+    	
     	loadResources();
-    	map = new NavTmxMapLoader().load("maps/Map.tmx");
+    	Content.music.get("mainTheme").play();
+    	map = new TmxMapLoader().load("maps/Map.tmx");
     	//map=new TmxMapLoader().load("maps/Map.tmx");
     	mapRenderer=new OrthogonalTiledMapRenderer(map,1/(MyConst.ORG_TILE_WIDTH*MyConst.TILES_IN_M));
         camera=new OrthographicCamera(MyConst.APP_WIDTH/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, MyConst.APP_HEIGHT/MyConst.PIX_IN_M*MyConst.VIEW_SCALE);
@@ -105,13 +113,9 @@ public class PlayState implements Screen{
         batch=new SpriteBatch();
         batch.setProjectionMatrix(camera.combined);
         srenderer=new ShapeRenderer();
-        
         srenderer.setProjectionMatrix(camera.combined);
-        
         hud=new Hud(this);
-		
 		Array<Body> bodies=MapBodyBuilder.buildTiles(map, world,this);
-		
 		rayHandler = new RayHandler(world); 	
 		rayHandler.setAmbientLight(0.03f, 0.03f, 0.03f, 0.6f);
 		rayHandler.setBlurNum(3);
@@ -119,7 +123,7 @@ public class PlayState implements Screen{
 		
 		
 		Light.setContactFilter(MyConst.CATEGORY_BULLETS,(short)0,MyConst.MASK_BULLETS);
-		createCollisionListener();
+		world.setContactListener(new Contacts());
 		MapBodyBuilder.initFinder(map);
 		//object creation
 		player=new Player(this,new Vector2(10,7));
@@ -132,8 +136,9 @@ public class PlayState implements Screen{
     }
     
     public boolean isInView(Vector2 vect){
-    	if(Math.abs(player.getPosition().x-vect.x)>camera.viewportWidth/2||
-     		   Math.abs(player.getPosition().y-vect.y)>camera.viewportHeight/2)
+    	Vector2 v=new Vector2(camera.position.x,camera.position.y);
+    	if(Math.abs(v.x-vect.x)>camera.viewportWidth/2||
+     		   Math.abs(v.y-vect.y)>camera.viewportHeight/2)
      	{
     		return false;
      	}else{
@@ -143,10 +148,10 @@ public class PlayState implements Screen{
     }
     
     public void drawComponents(float delta){
-    	mapRenderer.render();
+    	//mapRenderer.render();
         debugRenderer.render(world, camera.combined);
-        
-        //----------------Sprites--------------------------------
+    	/*
+    	//----------------Sprites--------------------------------
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         player.draw(batch);
@@ -182,7 +187,7 @@ public class PlayState implements Screen{
         //------------------------------------------------------
         
         hud.draw();
-    	
+    	*/
     }
     
     @Override
@@ -193,8 +198,29 @@ public class PlayState implements Screen{
         	System.exit(0);
         }
         
+        //enable zooming with shift
+        /*if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
+			camOffset+=20*delta;
+			if(camOffset>10)camOffset=10;
+		}else{
+			camOffset-=20*delta;
+			if(camOffset<0)camOffset=0;
+			
+		}*/
+        Vector2 vect=new Vector2(camera.position.x,camera.position.y);
+        if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
+        	/*Vector2 neew=vect.cpy().add(Mouse.getWorldPos(camera).sub(vect).nor().scl(10*delta));
+        	camera.position.set(neew, camera.position.z);
+        	if(neew.dst(player.getPosition())>10){
+        		camera.position.set(vect, camera.position.z);
+        	}*/
+        	camera.position.set(Mouse.getWorldPos(camera).sub(player.getPosition()).scl(0.5f).add(player.getPosition()), camera.position.z);
+		}else{
+			
+			camera.position.set(player.getPosition(), camera.position.z);
+		}
+        //camera.position.set(player.getPosition().cpy().add(player.getDirection().cpy().nor().scl(camOffset).limit(10)), camera.position.z);
         
-        camera.position.set(player.getPosition(), camera.position.z);
 	    camera.update();
 	    
 	    
@@ -247,55 +273,6 @@ public class PlayState implements Screen{
     	
     }
     
-    private void createCollisionListener() {
-        world.setContactListener(new ContactListener() {
-        	
-        	private void bulletHit(GameObject bullet, GameObject other){
-        		bullet.setDying(true);
-            	if(other instanceof Enemy|| other instanceof Player){
-                	((Bullet)bullet).setRed(true);
-                	other.setHealth(other.getHealth()-10);
-                }
-        	}
-            
-        	@Override
-            public void beginContact(Contact contact) {
-            	
-        		GameObject a= (GameObject)contact.getFixtureA().getBody().getUserData();
-        		GameObject b = (GameObject)contact.getFixtureB().getBody().getUserData();
-                if(a.getBody().isBullet()){
-                	bulletHit(a, b);
-                }
-                if(b.getBody().isBullet()){
-                	bulletHit(b,a);
-                }
-               
-                
-					
-				
-                
-                
-                
-                
-                
-                
-            }
-
-            @Override
-            public void endContact(Contact contact) {
-                
-            }
-
-            @Override
-            public void preSolve(Contact contact, Manifold oldManifold) {
-            }
-
-            @Override
-            public void postSolve(Contact contact, ContactImpulse impulse) {
-            }
-
-        });
-    }
     /**
      * Creates one enemy for every path on the map
      */
@@ -305,8 +282,8 @@ public class PlayState implements Screen{
     		e.setPatrolPath(vect);
     		objects.add(e);
     	}
-    	Box b=new Box(this, new Vector2(player.getPosition().x, player.getPosition().y));
-    	objects.add(b);
+    	//Box b=new Box(this, new Vector2(player.getPosition().x, player.getPosition().y));
+    	//objects.add(b);
     }
 
     @Override

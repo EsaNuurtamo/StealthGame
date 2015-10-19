@@ -2,6 +2,8 @@ package game.objects;
 
 
 
+import game.MyConst;
+import game.ai.EnemyState;
 import game.states.PlayState;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -33,11 +35,15 @@ public class GameObject{
     protected float imgHeight;
     protected float radius;
     protected Animation animation;
+    protected boolean animated;
+    protected Vector2 animLoc=new Vector2();
+    		protected float animTime=0;
     protected boolean destroyed;
 	protected float health=5f;
 	protected float maxHealth=5f;
-	
+
     public void init(Vector2 position) {
+    	
     	// First we create a body definition
     	BodyDef bodyDef = new BodyDef();
     	// We set our body to dynamic, for something like ground which doesn't move we would set it to StaticBody
@@ -66,7 +72,16 @@ public class GameObject{
     	// BodyDef and FixtureDef don't need disposing, but shapes do.
     	circle.dispose();
     }
-    
+    public void alertAllNear(){
+		for(GameObject obj:state.getObjects()){
+			if(obj instanceof Enemy&&obj.getPosition().dst(getPosition())<7&&((Enemy)obj).getStateMachine().getCurrentState()!=EnemyState.CHASING){
+				((Enemy)obj).getStateMachine().changeState(EnemyState.SEARCH);
+			}
+		}
+	}
+    public void changeHealth(float amount){
+    	health+=amount;
+    }
     
     
     public void dispose(){
@@ -85,6 +100,7 @@ public class GameObject{
     	body.setUserData(this);
     	dying=false;
     	direction=new Vector2(0,1);
+    	animated=false;
     }
     
     
@@ -92,16 +108,25 @@ public class GameObject{
     
     
     public void draw(SpriteBatch batch){
-    	
-        batch.draw(
-        		
-            curTexture, body.getPosition().x-imgWidth/2, body.getPosition().y-imgHeight/2, 
-            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
-        );
+    	if(animated){
+    		
+    		batch.draw(
+            		curTexture, animLoc.x-imgWidth/2, animLoc.y-imgHeight/2, 
+    	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
+    	        );
+    		
+    	}else{
+    		batch.draw(
+            		
+    	            curTexture, body.getPosition().x-imgWidth/2, body.getPosition().y-imgHeight/2, 
+    	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
+    	        );
+    		
+    	}
     }
     
     public void drawShape(ShapeRenderer sr){
-    	sr.circle(body.getPosition().x, body.getPosition().y, radius);
+    	//sr.circle(body.getPosition().x, body.getPosition().y, radius);
     }
     
     public Body getBody() {

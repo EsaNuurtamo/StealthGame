@@ -2,7 +2,6 @@ package game.objects;
 
 import game.Content;
 import game.MyConst;
-import game.ai.AIType;
 import game.ai.EnemyState;
 import game.objects.guns.Gun;
 import game.objects.guns.Pistol;
@@ -26,6 +25,7 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.RayCastCallback;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 
 public class Enemy extends GameObject implements Updatable{
@@ -35,7 +35,7 @@ public class Enemy extends GameObject implements Updatable{
 	private GameObject objectSeen;
 	private float visionLen=10;
 	private Player player;
-	private float FOV=95f;
+	private float FOV=120f;
 	//gun
 	private Gun gun;
 	private float shootTimer;
@@ -48,14 +48,14 @@ public class Enemy extends GameObject implements Updatable{
 	float pathLength=0;
 	float finderInterval=1f;
 	
-	
 	//ai
-	private AIType aiState=AIType.WAITING;
+	
 	private float pathTimer=0;
 	private float giveUpTimer=0;
 	private float lookoutTimer=0;
 	private float turnTimer=0;
 	private float reactionTimer=0;
+	private float pathfindTimer=0;
 	//flashlight
 	private ConeLight light;
 	private VisibleCallback visibility;
@@ -67,21 +67,25 @@ public class Enemy extends GameObject implements Updatable{
     
 	public Enemy(PlayState state, Vector2 position) {
 		super(state, position);
+		health=20;
 		direction=new Vector2(0,1);
 		curTexture=new Sprite(Content.atlas.findRegion("Enemy"));
 		gun= new Pistol(this);
 		shootTimer=0f;
 	    dying=false;
-        speed=2;
+        speed=1;
         light=new ConeLight(state.getRayHandler(), 60, new Color(0.3f,0.3f,0.3f,0.4f),
     			9, 0, 0, imgRotation,25);
         light.setSoftnessLength(1f);
         light.setContactFilter((short)(MyConst.CATEGORY_PLAYER|MyConst.CATEGORY_BULLETS), (short)0,(short)(MyConst.MASK_PLAYER&MyConst.MASK_BULLETS));
         
-        stateMachine = new DefaultStateMachine<Enemy>(this, EnemyState.LOOKOUT);
+        stateMachine = new DefaultStateMachine<Enemy>(this, EnemyState.PATROL);
         visibility=new VisibleCallback(state.getPlayer());
         player=state.getPlayer();
+        animation=Content.animations.get("EnemyDeath");
     }
+	
+	
 	
 	@Override
 	public void dispose() {
@@ -104,6 +108,7 @@ public class Enemy extends GameObject implements Updatable{
     	bodyDef.position.set(position);
     	bodyDef.linearDamping=10f;
     	bodyDef.angularDamping=10f;
+    	bodyDef.fixedRotation=true;
     	
     	body = state.getWorld().createBody(bodyDef);
     	
@@ -119,6 +124,7 @@ public class Enemy extends GameObject implements Updatable{
     	fixtureDef.restitution = 0.0f; // Make it bounce a little bit
     	fixtureDef.filter.categoryBits=MyConst.CATEGORY_ENEMY;
     	
+    	
     	// Create our fixture and attach it to the body
     	fixture = body.createFixture(fixtureDef);
 
@@ -128,8 +134,33 @@ public class Enemy extends GameObject implements Updatable{
     	
 	}
 	
+	
 	@Override
 	public void update(float delta) {
+		if(health<=0&&!animated){
+			imgHeight*=2;
+			imgRotation-=90;
+			animated=true;
+			
+			//placing the animation beacause differnet size than 
+			animLoc=getPosition().cpy().add((direction.cpy().nor().scl(imgHeight/4*1)));
+		}
+		if(animated){
+			body.setActive(false);
+			if(animation.isAnimationFinished(animTime)){
+				light.setActive(false);
+				Timer.schedule(new Task(){
+					@Override
+					public void run() {
+						destroyed=true;
+					}
+				}, 10);
+				return;
+			}
+			curTexture=new Sprite(animation.getKeyFrame(animTime));
+			animTime+=delta;
+			return;
+		}
 		
 		pathTimer+=delta;
 		giveUpTimer+=delta;
@@ -137,6 +168,7 @@ public class Enemy extends GameObject implements Updatable{
 		turnTimer+=delta;
 		reactionTimer+=delta;
 		shootTimer+=delta;
+		pathfindTimer+=delta;
 		stateMachine.update();
 		gun.update(delta);
 		handleRotation(delta);
@@ -144,14 +176,14 @@ public class Enemy extends GameObject implements Updatable{
         light.setPosition(getPosition());
 		light.setDirection(imgRotation);
 		
-		if(health<0)destroyed=true;
+		
 	}
 	
 	public void shoot(){
-		System.out.println();
+		
 		//take advance
-		//Vector2 meetPoint=player.getPosition().cpy().add(player.direction.cpy().nor().scl(player.speed/20*player.speed));
-		//Vector2 apu=meetPoint.cpy().sub(getPosition());
+		Vector2 meetPoint=player.getPosition().cpy().add(player.direction.cpy().nor().scl(player.speed/20*player.speed));
+		Vector2 apu=meetPoint.cpy().sub(getPosition());
 		gun.aiShoot(direction,0f);
 	}
 	
@@ -215,13 +247,7 @@ public class Enemy extends GameObject implements Updatable{
 		this.finderInterval = finderInterval;
 	}
 
-	public AIType getAiState() {
-		return aiState;
-	}
-
-	public void setAiState(AIType aiState) {
-		this.aiState = aiState;
-	}
+	
 
 	public ConeLight getLight() {
 		return light;
@@ -260,7 +286,6 @@ public class Enemy extends GameObject implements Updatable{
 		findPathTo(state.getPlayer().getPosition());
 	}
 	public void findPathTo(Vector2 to){
-		
 		setPath(MapBodyBuilder.findPath(getPosition(), to, state.getMap()));
 	}
 	
@@ -271,32 +296,21 @@ public class Enemy extends GameObject implements Updatable{
 			return;
 		}
 		Vector2 v=path[waypoint].cpy().sub(getPosition()).nor().scl(speed);
-		
-		if(aiState==AIType.CHASING){
-			targetRotation=state.getPlayer().getPosition().cpy().sub(getPosition()).angle();
-		}else if(imgRotation!=v.angle()){
-        	targetRotation=v.angle();
-        }
-		body.setLinearVelocity(v);
+		targetRotation=v.angle();
+        body.setLinearVelocity(v);
 		
         if(isReached()){
         	waypoint++;
         	if(waypoint>=path.length){
-        		
-        		
         		waypoint=0;
         	}
-        	
-        	
         }
-        
-	}
+    }
 	
 	public void handleRotation(float delta){
 		float angle=0;
 		float r=targetRotation-direction.angle();
 		if(r==0){
-			
 			return;
 		}
 		if(r>0){
@@ -308,7 +322,6 @@ public class Enemy extends GameObject implements Updatable{
 				
 			}
 		}else{
-			
 			if(r<-180){
 				angle=360+r;
 				direction.rotate(+angle*delta*6);
@@ -400,6 +413,10 @@ public class Enemy extends GameObject implements Updatable{
     public float getTargetRoation(){
     	return targetRotation;
     }
-    
- 
+    public float getPathfindTimer() {
+		return pathfindTimer;
+	}
+ public void setPathfindTimer(float pathfindTimer) {
+	this.pathfindTimer = pathfindTimer;
+}
 }

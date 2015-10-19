@@ -50,8 +50,9 @@ public class MapBodyBuilder {
     // The pixels per tile. If your tiles are 16x16, this is set to 16f
 	private static float ppt=MyConst.ORG_TILE_WIDTH*MyConst.TILES_IN_M;
     private static int tileNum=60;
-    public static NavigationGrid<GridCell> navGrid;
+    public static NavigationTiledMapLayer navGrid;
     public static AStarGridFinder<GridCell> finder;
+    
     public static Array<Body> buildShapes(Map map, World world) {
     	
     	MapLayer tl=map.getLayers().get("Physics");
@@ -104,7 +105,12 @@ public class MapBodyBuilder {
     	for(MapObject obj: tl.getObjects()){
     		Ellipse c=((EllipseMapObject)obj).getEllipse();
     		if(c==null)continue;
-    		Integer dist=Integer.parseInt(obj.getProperties().get("distance").toString());
+    		Integer dist=null;
+    		if(obj.getProperties().get("distance")==null){
+    			dist=6;
+    		}else{
+    			dist=Integer.parseInt(obj.getProperties().get("distance").toString());
+    		}
     		PointLight point=new PointLight(ray, dist*50, new Color(0.2f,0.2f,0.2f,0.1f), (dist+2), c.x/ppt, c.y/ppt);
     		point.setSoftnessLength(1f);
     		point.setStaticLight(true);
@@ -112,7 +118,7 @@ public class MapBodyBuilder {
     		PointLight p=new PointLight(ray, dist*50, new Color(0.3f,0.3f,0.3f,0.3f), dist, c.x/ppt, c.y/ppt);
     		p.setSoftnessLength(1f);
     		
-    	}
+    	}  
     }
     
     public static Array<Vector2[]> buildPaths(Map map){
@@ -128,13 +134,23 @@ public class MapBodyBuilder {
     
     public static Array<Body> buildTiles(Map map, World world, PlayState state){
     	Array<Body> bodies = new Array<Body>();
-    	TiledMapTileLayer tl=(TiledMapTileLayer)map.getLayers().get("Blocked");
+    	GridCell[][] cells=new GridCell[tileNum][tileNum];
+    	navGrid=new NavigationTiledMapLayer(cells);
+    	TiledMapTileLayer tl=(TiledMapTileLayer)map.getLayers().get("Tiles");
         for (int i=0; i<tileNum;i++){
             for(int j=0; j<tileNum;j++){
                 
                 Cell c=tl.getCell(i, j);
                 float apu=MyConst.ORG_TILE_WIDTH;
-                if(c==null||c.getTile()==null)continue;
+               
+                //If no tile or tile is a walkable tile then don't create object. Also sets information to pathfinding system 
+                if(c==null||c.getTile()==null||c.getTile().getProperties().get("walkable").toString().equals("1")){
+                	navGrid.setCell(i, j, new GridCell(i, j, true));
+                	continue;
+                }
+                
+                
+                navGrid.setCell(i, j, new GridCell(i, j, false));
                 Rectangle r=new Rectangle();
                 r.height=apu;
                 r.width=apu;
@@ -158,6 +174,8 @@ public class MapBodyBuilder {
                 
             }
         }
+        
+       
         return bodies;
     }
     
@@ -240,10 +258,9 @@ public class MapBodyBuilder {
     		index++;
     	}
     	return list;*/
-    	NavigationTiledMapLayer nav = (NavigationTiledMapLayer)map.getLayers().get("navigation");
     	
-    	List<GridCell> pathToEnd = finder.findPath((int)(v1.x*MyConst.TILES_IN_M), (int)(v1.y/MyConst.TILES_IN_M), 
-				   (int)(v2.x*MyConst.TILES_IN_M), (int)(v2.y/MyConst.TILES_IN_M), nav);
+    	List<GridCell> pathToEnd = finder.findPath((int)(v1.x*MyConst.TILES_IN_M), (int)(v1.y*MyConst.TILES_IN_M), 
+				   (int)(v2.x*MyConst.TILES_IN_M), (int)(v2.y*MyConst.TILES_IN_M), navGrid);
     	
     	Vector2[] list=new Vector2[pathToEnd.size()];
     	int index=0;

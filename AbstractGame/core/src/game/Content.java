@@ -27,17 +27,35 @@ public class Content {
 	public static HashMap<String, Sound> sounds= new HashMap<String, Sound>();
 	public static TextureAtlas atlas=new TextureAtlas(Gdx.files.internal("images/game.atlas"));
 	public static HashMap<String,Animation> animations=new HashMap<String, Animation>();
+	
+	public static void loadAll(){
+		loadSound("sound/Pistol.wav", "shootPistol");
+		loadSound("sound/MG.wav", "shootMG");
+		loadSound("sound/Shotgun.wav", "shootShotgun");
+		loadSound("sound/PistolReload.wav", "reloadPistol");
+		loadSound("sound/MGReload.wav", "reloadMG");
+		loadSound("sound/ShotgunReload.wav", "reloadShotgun");
+		
+		loadMusic("sound/MainTheme.ogg", "mainTheme");
+		
+	}
 	/***********/
 	/* Texture */
 	/***********/
 	
 	public static void loadAnimations(){
-		Array<TextureRegion> list=new Array<TextureRegion>();
+		
 		TextureRegion r=atlas.findRegion("Explotion");
 		TextureRegion[][] grid=r.split(64, 64);
 		Animation a=new Animation(0.06f, grid[0]);
 		a.setPlayMode(PlayMode.LOOP);
 		animations.put("Explotion", a);
+		
+		r=atlas.findRegion("EnemyDeath");
+		grid=r.split(64, 128);
+		a=new Animation(0.06f, grid[0]);
+		a.setPlayMode(PlayMode.NORMAL);
+		animations.put("EnemyDeath", a);
 	}
     
 	

@@ -49,7 +49,7 @@ public void update(float delta) {
     	fixtureDef.density = 0.5f; 
     	fixtureDef.friction = 0.4f;
     	fixtureDef.restitution = 0.0f; // Make it bounce a little bit
-    	fixtureDef.filter.categoryBits=MyConst.CATEGORY_ENEMY;
+    	fixtureDef.filter.categoryBits=MyConst.CATEGORY_SCENERY;
     	
     	// Create our fixture and attach it to the body
     	fixture = body.createFixture(fixtureDef);

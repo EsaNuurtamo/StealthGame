@@ -22,7 +22,7 @@ public class Mouse {
 	public static Vector2 getWorldPos(Camera camera){
 		//float x=(Mouse.getScreenPos().x-Gdx.graphics.getWidth()/2)/(MyConst.PIX_IN_M)*MyConst.VIEW_SCALE+cam.position.x;
 		//float y=(Mouse.getScreenPos().y-Gdx.graphics.getHeight()/2)/(MyConst.PIX_IN_M)*MyConst.VIEW_SCALE+cam.position.y;
-		Vector2 scr=getScreenPos();
+		
 		Vector3 vecCursorPos = new Vector3(Gdx.input.getX(),Gdx.input.getY(), 0);
 		Vector3 world=camera.unproject(vecCursorPos);
 		return new Vector2(world.x,world.y);

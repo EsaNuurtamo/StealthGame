@@ -1,10 +1,17 @@
 package game.objects;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 import game.Content;
 import game.MyConst;
+import game.ai.EnemyState;
 import game.input.Mouse;
 import game.objects.guns.Gun;
+import game.objects.guns.MchineGun;
 import game.objects.guns.Pistol;
+import game.objects.guns.Shotgun;
 import game.states.PlayState;
 import box2dLight.ConeLight;
 
@@ -23,6 +30,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 public class Player extends GameObject implements Updatable{
 	private Sprite testSprite;
 	private Gun gun;
+	private LinkedList<Gun> guns=new LinkedList<Gun>();
 	private GameObject picked=null;
 	
 	private ConeLight light;
@@ -34,7 +42,10 @@ public class Player extends GameObject implements Updatable{
 		curTexture=new Sprite(Content.atlas.findRegion("Player"));
 		testSprite=new Sprite(curTexture);
 		testSprite.setColor(Color.RED);
-		gun= new Pistol(this);
+		guns.add(new Pistol(this));
+		guns.add(new MchineGun(this));
+		guns.add(new Shotgun(this));
+		gun=guns.peekLast();
 		speed=4;
 		light=new ConeLight(state.getRayHandler(), 60, new Color(0.3f,0.3f,0.3f,0.4f),
     			9, 0, 0, imgRotation,25);
@@ -73,25 +84,57 @@ public class Player extends GameObject implements Updatable{
 		}
 		body.setLinearVelocity(v.nor().scl(speed));
 		
+		Vector2 c=Mouse.getWorldPos(state.getCamera()).sub(getPosition());
 		
-		Vector2 mouse=new Vector2(Gdx.graphics.getWidth()/2,Gdx.graphics.getHeight()/2);
-		direction=new Vector2(Gdx.input.getX(),Gdx.graphics.getHeight()-Gdx.input.getY()).sub(mouse);
+		direction=c;
 		imgRotation=direction.angle();
 		
 		//shooting
-		if(Gdx.input.isButtonPressed(0)&&Gdx.input.justTouched()){
-			Vector2 c=Mouse.getWorldPos(state.getCamera()).sub(getPosition());
-			gun.shoot(c);
+		if(Gdx.input.isButtonPressed(0)&&Gdx.input.isTouched()){
+			gun.pullTrigger(c);
 		}
 		if(Gdx.input.isButtonPressed(1)&&Gdx.input.justTouched()){
-			state.addObj(new Box(state,Mouse.getWorldPos(state.getCamera())));
+			Enemy e=nearestEnemy();
+			if(e.getPosition().dst(getPosition())<1f&&Math.abs(direction.angle()-e.getPosition().cpy().sub(getPosition()).angle())<90&&
+			   e.getStateMachine().getCurrentState()!=EnemyState.CHASING&&e.getStateMachine().getCurrentState()!=EnemyState.SEARCH){
+				e.setHealth(-1);
+			}
+			
 		}
 		if(Gdx.input.isKeyJustPressed(Keys.F)){
 			light.setActive(!light.isActive());
 		}
 		
+		if(Gdx.input.isKeyJustPressed(Keys.E)){
+			state.addObj(new Pickable(state,Mouse.getWorldPos(state.getCamera()),(int)(Math.random()*2)));
+		}
+		
+		if(Gdx.input.isKeyJustPressed(Keys.SPACE)){
+			
+			gun=guns.poll();
+			guns.addLast(gun);
+		}
+		
+		if(Gdx.input.isKeyJustPressed(Keys.R)){
+			gun.reload();
+		}
+		
+		
 		light.setPosition(getPosition());
 		light.setDirection(direction.angle());
+	}
+	
+	public Enemy nearestEnemy(){
+		Enemy e=null;
+		float dst=Float.MAX_VALUE;
+		for(GameObject obj:state.getObjects()){
+			float cur=obj.getPosition().dst(getPosition());
+			if(obj instanceof Enemy&&cur<dst){
+				dst=cur;
+				e=(Enemy)obj;
+			}
+		}
+		return e;
 	}
 	
 	@Override

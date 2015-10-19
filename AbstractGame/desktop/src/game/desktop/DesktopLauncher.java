@@ -15,7 +15,7 @@ public class DesktopLauncher {
 		config.width=MyConst.APP_WIDTH;
 		config.height=MyConst.APP_HEIGHT;
 		config.vSyncEnabled=true;
-		config.fullscreen=false;
+		config.fullscreen=true;
 		Settings settings = new Settings();
         //TexturePacker.process(settings, "/Users/esa/Desktop/LIBGDX/StealthGame/AbstractGame/android/assets/images", 
           								//"/Users/esa/Desktop/LIBGDX/StealthGame/AbstractGame/android/assets/images", "game");
