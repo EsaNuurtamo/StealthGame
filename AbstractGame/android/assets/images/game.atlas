@@ -39,9 +39,23 @@ Bullet
   orig: 64, 64
   offset: 0, 0
   index: -1
-Enemy
+Bullet_laser
   rotate: false
   xy: 1674, 130
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Crosshair
+  rotate: false
+  xy: 1482, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Enemy
+  rotate: false
+  xy: 1740, 130
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
@@ -53,23 +67,30 @@ EnemyDeath
   orig: 1024, 192
   offset: 0, 0
   index: -1
-Explotion
+Explosion
   rotate: false
   xy: 1028, 130
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
+Grenade
+  rotate: false
+  xy: 1548, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
 Health
   rotate: false
-  xy: 1482, 64
+  xy: 1806, 130
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 Player
   rotate: false
-  xy: 1740, 130
+  xy: 1614, 64
   size: 64, 64
   orig: 64, 64
   offset: 0, 0

@@ -70,7 +70,7 @@ public static BitmapFont font =new BitmapFont();
 		
 		bfont=new BitmapFont(Gdx.files.internal("fonts/mainFont.fnt"));
 		bfont.scale(0.3f);
-		bfont.setColor(Color.BLACK);
+		//bfont.setColor(Color.BLACK);
 		skin.add("titleFont",bfont);
 		
 		bfont=new BitmapFont();

@@ -10,6 +10,10 @@ import com.badlogic.gdx.physics.box2d.RayCastCallback;
 public class VisibleCallback implements RayCastCallback{
 	GameObject targetObj;
     boolean isVisible;
+    
+    public VisibleCallback(){
+    	this(null);
+    }
 	public VisibleCallback(GameObject go) {
 		targetObj=go;
 		isVisible=true;
@@ -42,6 +46,8 @@ public class VisibleCallback implements RayCastCallback{
 		this.isVisible = isVisible;
 	}
 	
-	
+	public void setTargetObj(GameObject targetObj) {
+		this.targetObj = targetObj;
+	}
 
 }

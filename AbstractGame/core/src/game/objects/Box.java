@@ -16,14 +16,27 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 public class Box extends GameObject implements Updatable{
 	
 	public Box(PlayState state, Vector2 position) {
-		super(state, position);
-		curTexture=new Sprite(Content.atlas.findRegion("Box"));
+		this(state, position,0.3f);
+		
 	}
-@Override
-public void update(float delta) {
-	imgRotation=(float)Math.toDegrees(body.getAngle());
-	
-}
+	public Box(PlayState state, Vector2 position, float radius) {
+		super(state, position,radius);
+		curTexture=new Sprite(Content.atlas.findRegion("Box"));
+		
+	}
+	@Override
+	public void update(float delta) {
+		imgRotation=(float)Math.toDegrees(body.getAngle());
+		if(dying){
+			for(int i=0;i<5;i++){
+				state.addObj(new Box(state, getPosition(),radius*0.7f));
+			}
+			
+			
+			setDestroyed(true);
+		}
+		
+	}
 	@Override
 	public void init(Vector2 position) {
 		// First we create a body definition
@@ -40,8 +53,9 @@ public void update(float delta) {
     	// Create a circle shape and set its radius to 6
     	//PolygonShape circle = new PolygonShape();
     	//circle.setAsBox(0.3f, 0.3f);
-    	CircleShape circle = new CircleShape();
-    	circle.setRadius(0.3f);
+    	PolygonShape circle = new PolygonShape();
+    	circle.setAsBox(radius, radius);
+    	
 
     	// Create a fixture definition to apply our shape to
     	FixtureDef fixtureDef = new FixtureDef();
@@ -59,5 +73,7 @@ public void update(float delta) {
     	circle.dispose();
     	
 	}
+	
+	
 
 }

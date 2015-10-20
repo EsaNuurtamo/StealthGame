@@ -35,6 +35,7 @@ public class Content {
 		loadSound("sound/PistolReload.wav", "reloadPistol");
 		loadSound("sound/MGReload.wav", "reloadMG");
 		loadSound("sound/ShotgunReload.wav", "reloadShotgun");
+		loadSound("sound/Explosion.wav", "explosion");
 		
 		loadMusic("sound/MainTheme.ogg", "mainTheme");
 		
@@ -45,11 +46,11 @@ public class Content {
 	
 	public static void loadAnimations(){
 		
-		TextureRegion r=atlas.findRegion("Explotion");
+		TextureRegion r=atlas.findRegion("Explosion");
 		TextureRegion[][] grid=r.split(64, 64);
-		Animation a=new Animation(0.06f, grid[0]);
-		a.setPlayMode(PlayMode.LOOP);
-		animations.put("Explotion", a);
+		Animation a=new Animation(0.045f, grid[0]);
+		a.setPlayMode(PlayMode.NORMAL);
+		animations.put("Explosion", a);
 		
 		r=atlas.findRegion("EnemyDeath");
 		grid=r.split(64, 128);

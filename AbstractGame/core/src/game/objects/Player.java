@@ -8,6 +8,7 @@ import game.Content;
 import game.MyConst;
 import game.ai.EnemyState;
 import game.input.Mouse;
+import game.objects.guns.Granade;
 import game.objects.guns.Gun;
 import game.objects.guns.MchineGun;
 import game.objects.guns.Pistol;
@@ -32,16 +33,15 @@ public class Player extends GameObject implements Updatable{
 	private Gun gun;
 	private LinkedList<Gun> guns=new LinkedList<Gun>();
 	private GameObject picked=null;
-	
+	private int numGranades=1;
 	private ConeLight light;
 	public Player(PlayState state, Vector2 position) {
 		
 		super(state, position);
-		maxHealth=200;
-		health=200;
+		maxHealth=50;
+		health=50;
 		curTexture=new Sprite(Content.atlas.findRegion("Player"));
-		testSprite=new Sprite(curTexture);
-		testSprite.setColor(Color.RED);
+		
 		guns.add(new Pistol(this));
 		guns.add(new MchineGun(this));
 		guns.add(new Shotgun(this));
@@ -53,17 +53,11 @@ public class Player extends GameObject implements Updatable{
         light.setContactFilter((short)(MyConst.CATEGORY_PLAYER|MyConst.CATEGORY_BULLETS), (short)0,(short)(MyConst.MASK_PLAYER&MyConst.MASK_BULLETS));
 	}
 	
-	@Override
-	public void draw(SpriteBatch batch) {
-		batch.draw(
-	           testSprite, body.getPosition().x-imgWidth/2, body.getPosition().y-imgHeight/2, 
-	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
-	        );
-	}
+	
 	
 	public void update(float delta){
 		if(health<=0){
-			
+			body.setActive(false);
 			return;
 		}
 			
@@ -107,6 +101,7 @@ public class Player extends GameObject implements Updatable{
 		
 		if(Gdx.input.isKeyJustPressed(Keys.E)){
 			state.addObj(new Pickable(state,Mouse.getWorldPos(state.getCamera()),(int)(Math.random()*2)));
+			//state.addObj(new Box(state,Mouse.getWorldPos(state.getCamera())));
 		}
 		
 		if(Gdx.input.isKeyJustPressed(Keys.SPACE)){
@@ -117,6 +112,14 @@ public class Player extends GameObject implements Updatable{
 		
 		if(Gdx.input.isKeyJustPressed(Keys.R)){
 			gun.reload();
+		}
+		
+		if(Gdx.input.isKeyJustPressed(Keys.G)&&numGranades>0){
+			numGranades--;
+			Granade g=new Granade(state,getPosition().cpy().add(direction.cpy().nor().scl(0.25f)));
+			g.setDirection(c);
+			g.getBody().applyLinearImpulse(c.cpy().nor().scl(0.6f), getPosition(), true);
+			state.addObj(g);
 		}
 		
 		

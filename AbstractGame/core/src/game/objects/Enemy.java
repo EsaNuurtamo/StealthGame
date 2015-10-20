@@ -66,7 +66,7 @@ public class Enemy extends GameObject implements Updatable{
     private float targetRotation;
     
 	public Enemy(PlayState state, Vector2 position) {
-		super(state, position);
+		super(state, position, 0.3f);
 		health=20;
 		direction=new Vector2(0,1);
 		curTexture=new Sprite(Content.atlas.findRegion("Enemy"));
@@ -99,62 +99,23 @@ public class Enemy extends GameObject implements Updatable{
 	}
 	
 	@Override
-	public void init(Vector2 position) {
-		// First we create a body definition
-    	BodyDef bodyDef = new BodyDef();
-    	// We set our body to dynamic, for something like ground which doesn't move we would set it to StaticBody
-    	bodyDef.type = BodyType.DynamicBody;
-    	// Set our body's starting position in the world
-    	bodyDef.position.set(position);
-    	bodyDef.linearDamping=10f;
-    	bodyDef.angularDamping=10f;
-    	bodyDef.fixedRotation=true;
-    	
-    	body = state.getWorld().createBody(bodyDef);
-    	
-    	// Create a circle shape and set its radius to 6
-    	CircleShape circle = new CircleShape();
-    	circle.setRadius(0.3f);
-
-    	// Create a fixture definition to apply our shape to
-    	FixtureDef fixtureDef = new FixtureDef();
-    	fixtureDef.shape = circle;
-    	fixtureDef.density = 0.5f; 
-    	fixtureDef.friction = 0.4f;
-    	fixtureDef.restitution = 0.0f; // Make it bounce a little bit
-    	fixtureDef.filter.categoryBits=MyConst.CATEGORY_ENEMY;
-    	
-    	
-    	// Create our fixture and attach it to the body
-    	fixture = body.createFixture(fixtureDef);
-
-    	// Remember to dispose of any shapes after you're done with them!
-    	// BodyDef and FixtureDef don't need disposing, but shapes do.
-    	circle.dispose();
-    	
-	}
-	
-	
-	@Override
 	public void update(float delta) {
+		if(dying)return;
 		if(health<=0&&!animated){
 			imgHeight*=2;
 			imgRotation-=90;
 			animated=true;
-			
+				
 			//placing the animation beacause differnet size than 
 			animLoc=getPosition().cpy().add((direction.cpy().nor().scl(imgHeight/4*1)));
 		}
 		if(animated){
 			body.setActive(false);
+			
 			if(animation.isAnimationFinished(animTime)){
 				light.setActive(false);
-				Timer.schedule(new Task(){
-					@Override
-					public void run() {
-						destroyed=true;
-					}
-				}, 10);
+				dying=true;
+				state.addObj(new Pickable(state,getPosition(),(int)(Math.random()*2)));
 				return;
 			}
 			curTexture=new Sprite(animation.getKeyFrame(animTime));

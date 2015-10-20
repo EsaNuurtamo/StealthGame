@@ -14,7 +14,7 @@ public class Pickable extends GameObject{
 	public static final int AMMO=0,HEALTH=1;
 	private int type;
 	public Pickable(PlayState state, Vector2 position, int type) {
-		super(state, position);
+		super(state, position,0.3f);
 		this.type=type;
 		switch (type) {
 		case AMMO:
@@ -41,7 +41,7 @@ public class Pickable extends GameObject{
 
     	// Create a circle shape and set its radius to 6
     	CircleShape circle = new CircleShape();
-    	circle.setRadius(0.3f);
+    	circle.setRadius(radius);
 
     	// Create a fixture definition to apply our shape to
     	FixtureDef fixtureDef = new FixtureDef();

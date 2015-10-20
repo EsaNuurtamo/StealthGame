@@ -21,7 +21,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 
 
-public class GameObject{
+public abstract class GameObject{
 	protected Body body;
 	protected Fixture fixture;
     protected PlayState state;
@@ -56,7 +56,7 @@ public class GameObject{
 
     	// Create a circle shape and set its radius to 6
     	CircleShape circle = new CircleShape();
-    	circle.setRadius(1f);
+    	circle.setRadius(radius);
 
     	// Create a fixture definition to apply our shape to
     	FixtureDef fixtureDef = new FixtureDef();
@@ -81,26 +81,34 @@ public class GameObject{
 	}
     public void changeHealth(float amount){
     	health+=amount;
+    	if(health>maxHealth)health=maxHealth;
+    	if(health<0)health=0;
     }
     
     
     public void dispose(){
     	
     }
-
+    
     public GameObject(PlayState state, Vector2 position) {
+		this(state,position,0.3f);
+	}
+
+    public GameObject(PlayState state, Vector2 position, float radius) {
     	
     	this.state=state;
+    	this.radius=radius;
     	init(position);
-    	imgWidth=(int)(fixture.getShape().getRadius()*2*1.85f);
-    	imgHeight=(int)(fixture.getShape().getRadius()*2*1.85f);
+    	imgWidth=radius*2*1.85f;
+    	imgHeight=radius*2*1.85f;
     	imgRotation=0;
-    	radius=fixture.getShape().getRadius();
+    	
     	destroyed=false;
-    	body.setUserData(this);
+    	
     	dying=false;
     	direction=new Vector2(0,1);
     	animated=false;
+    	if(body!=null)body.setUserData(this);
     }
     
     
@@ -108,6 +116,7 @@ public class GameObject{
     
     
     public void draw(SpriteBatch batch){
+    	
     	if(animated){
     		
     		batch.draw(
@@ -123,6 +132,10 @@ public class GameObject{
     	        );
     		
     	}
+    }
+    
+    public void destroy(){
+    	
     }
     
     public void drawShape(ShapeRenderer sr){
@@ -184,7 +197,9 @@ public class GameObject{
 	}
     
     public void setHealth(float health) {
-		this.health = health;
+    	if(health>=maxHealth)this.health=maxHealth;
+    	else this.health = health;
+		
 	}
     public float getHealth() {
 		return health;
@@ -201,4 +216,8 @@ public class GameObject{
     	
     	return go.imgRotation==imgRotation&&go.getPosition().equals(getPosition());
     }
+    
+    public Vector2 getAnimLoc() {
+		return animLoc;
+	}
 }

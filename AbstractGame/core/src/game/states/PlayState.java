@@ -32,6 +32,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -104,9 +105,9 @@ public class PlayState implements Screen{
     public void show() {
     	
     	loadResources();
-    	Content.music.get("mainTheme").play();
-    	map = new TmxMapLoader().load("maps/Map.tmx");
-    	//map=new TmxMapLoader().load("maps/Map.tmx");
+    	//Content.music.get("mainTheme").play();
+    	//map = new TmxMapLoader().load("maps/Test.tmx");
+    	map=new TmxMapLoader().load("maps/Map.tmx");
     	mapRenderer=new OrthogonalTiledMapRenderer(map,1/(MyConst.ORG_TILE_WIDTH*MyConst.TILES_IN_M));
         camera=new OrthographicCamera(MyConst.APP_WIDTH/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, MyConst.APP_HEIGHT/MyConst.PIX_IN_M*MyConst.VIEW_SCALE);
         viewport=new FitViewport(MyConst.APP_WIDTH/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, MyConst.APP_HEIGHT/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, camera);
@@ -123,7 +124,8 @@ public class PlayState implements Screen{
 		
 		
 		Light.setContactFilter(MyConst.CATEGORY_BULLETS,(short)0,MyConst.MASK_BULLETS);
-		world.setContactListener(new Contacts());
+		world.setContactListener(new Contacts(this));
+		world.setWarmStarting(true);
 		MapBodyBuilder.initFinder(map);
 		//object creation
 		player=new Player(this,new Vector2(10,7));
@@ -133,12 +135,16 @@ public class PlayState implements Screen{
 		
         camera.position.set(player.getPosition(), camera.position.z);
 	    camera.update();
+	    
+	    Pixmap pm = new Pixmap(Gdx.files.internal("images/Crosshair.png"));
+	    Gdx.input.setCursorImage(pm, pm.getWidth()/2, pm.getHeight()/2);
+	    pm.dispose();
     }
     
     public boolean isInView(Vector2 vect){
     	Vector2 v=new Vector2(camera.position.x,camera.position.y);
-    	if(Math.abs(v.x-vect.x)>camera.viewportWidth/2||
-     		   Math.abs(v.y-vect.y)>camera.viewportHeight/2)
+    	if(Math.abs(v.x-vect.x)>camera.viewportWidth/2+150||
+     	   Math.abs(v.y-vect.y)>camera.viewportHeight/2+150)
      	{
     		return false;
      	}else{
@@ -148,20 +154,20 @@ public class PlayState implements Screen{
     }
     
     public void drawComponents(float delta){
-    	//mapRenderer.render();
+    	mapRenderer.render();
         debugRenderer.render(world, camera.combined);
-    	/*
+    	
     	//----------------Sprites--------------------------------
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        player.draw(batch);
-    	for(GameObject obj:objects){
+        for(GameObject obj:objects){
     		if(!isInView(obj.getPosition()))
     		{
     			continue;
     		}
         	obj.draw(batch);
         }
+        player.draw(batch);
     	batch.end();
         //-------------------------------------------------------
         
@@ -187,7 +193,7 @@ public class PlayState implements Screen{
         //------------------------------------------------------
         
         hud.draw();
-    	*/
+    	
     }
     
     @Override
@@ -196,6 +202,10 @@ public class PlayState implements Screen{
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         if(Gdx.input.isKeyPressed(Keys.ESCAPE)){
         	System.exit(0);
+        }
+        if(Gdx.input.isKeyJustPressed(Keys.L)){
+        	dispose();
+        	game.setScreen(new PlayState(game));
         }
         
         //enable zooming with shift
@@ -236,6 +246,7 @@ public class PlayState implements Screen{
 	    world.step(delta, 6, 2);
 	    world.clearForces();
 	    
+	    
     }
     
     public boolean isPlayerInLight(){
@@ -258,7 +269,7 @@ public class PlayState implements Screen{
         	if(obj.isDestroyed()){
         		obj.dispose();
         		i.remove();
-        		world.destroyBody(obj.getBody());
+        		if(obj.getBody()!=null)world.destroyBody(obj.getBody());
         		
         	}else if(obj instanceof Updatable){
         		((Updatable)obj).update(delta);

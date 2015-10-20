@@ -9,6 +9,7 @@ package game.objects;
 import game.Content;
 import game.MyConst;
 import game.states.PlayState;
+import game.visuals.Effect;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -30,13 +31,14 @@ public class Bullet extends GameObject implements Updatable{
 	float animTime=0;
 	private boolean red=false;
     public Bullet(PlayState state, Vector2 position) {
-        super(state, position);
+        super(state, position, 0.1f);
         curTexture=new Sprite(Content.atlas.findRegion("Bullet"));
-        imgWidth=(int)(fixture.getShape().getRadius()*2*5);
-    	imgHeight=(int)(fixture.getShape().getRadius()*2*5);
+        
+        imgWidth=(radius*10);
+    	imgHeight=(radius*10);
         speed=20;
         dying=false;
-        animation=Content.animations.get("Explotion");
+        
     }
     
     @Override
@@ -54,7 +56,7 @@ public class Bullet extends GameObject implements Updatable{
     	
     	// Create a circle shape and set its radius to 6
     	CircleShape circle = new CircleShape();
-    	circle.setRadius(0.1f);
+    	circle.setRadius(radius);
 
     	// Create a fixture definition to apply our shape to
     	FixtureDef fixtureDef = new FixtureDef();
@@ -75,23 +77,13 @@ public class Bullet extends GameObject implements Updatable{
 	@Override
 	public void update(float delta) {
 		
-		if(dying){
-			body.setActive(false);
-			if(animation==null){
-				imgHeight*=0.7f;
-				imgWidth*=0.7f;
-				animation=Content.animations.get("Explotion");
-			}
-			if(animation.isAnimationFinished(animTime)){
-				destroyed=true;
-				return;
-			}
-			
-			curTexture=new Sprite(animation.getKeyFrame(animTime));
-			
-			animTime+=delta;
+		/*if(dying){
+			//selvitä mistä johtuu bugi
+			//body.setActive(false);
+			setDestroyed(true);
+			state.addObj(new Effect(state,getPosition().cpy(),Effect.OBJECT_HIT));
 			return;
-		}
+		}*/
 		body.setLinearVelocity(direction.cpy().nor().scl(speed));
 		
 	}
