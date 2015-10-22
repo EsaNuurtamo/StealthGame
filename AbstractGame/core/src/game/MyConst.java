@@ -30,6 +30,7 @@ public class MyConst {
     public static final short CATEGORY_BULLETS = 2; 
     public static final short CATEGORY_SCENERY = 4;
     public static final short CATEGORY_ENEMY = 8;
+    public static final short CATEGORY_ON_FLOOR=16;
     public static final short MASK_BULLETS=CATEGORY_ENEMY|CATEGORY_PLAYER|CATEGORY_SCENERY;
     
     public static final short MASK_PLAYER=CATEGORY_ENEMY|CATEGORY_SCENERY|CATEGORY_BULLETS;

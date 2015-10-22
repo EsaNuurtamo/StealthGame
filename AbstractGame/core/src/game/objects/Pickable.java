@@ -1,6 +1,7 @@
 package game.objects;
 
 import game.Content;
+import game.MyConst;
 import game.states.PlayState;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -36,7 +37,7 @@ public class Pickable extends GameObject{
     	// Set our body's starting position in the world
     	bodyDef.position.set(position);
     	bodyDef.fixedRotation=true;
-   
+  
     	body = state.getWorld().createBody(bodyDef);
 
     	// Create a circle shape and set its radius to 6
@@ -49,7 +50,7 @@ public class Pickable extends GameObject{
     	fixtureDef.density = 0.5f; 
     	fixtureDef.friction = 0.4f;
     	fixtureDef.isSensor=true;
-        
+    	fixtureDef.filter.categoryBits=MyConst.CATEGORY_ON_FLOOR;
     	
     	// Create our fixture and attach it to the body
     	fixture = body.createFixture(fixtureDef);

@@ -160,6 +160,7 @@ public class PlayState implements Screen{
     	//----------------Sprites--------------------------------
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
+        
         for(GameObject obj:objects){
     		if(!isInView(obj.getPosition()))
     		{
@@ -168,7 +169,8 @@ public class PlayState implements Screen{
         	obj.draw(batch);
         }
         player.draw(batch);
-    	batch.end();
+    	
+        batch.end();
         //-------------------------------------------------------
         
         
@@ -188,6 +190,7 @@ public class PlayState implements Screen{
     			continue;
     		}
         	obj.drawShape(srenderer);
+        	player.debugDraw(srenderer);
         }
         srenderer.end();
         //------------------------------------------------------
@@ -236,16 +239,12 @@ public class PlayState implements Screen{
 	    
         mapRenderer.setView(camera);
         
-       
-        
         drawComponents(delta); 
-        updateObjects(delta);
 	    
         
-	    
-	    world.step(delta, 6, 2);
+        world.step(delta, 6, 2);
 	    world.clearForces();
-	    
+	    updateObjects(delta);
 	    
     }
     

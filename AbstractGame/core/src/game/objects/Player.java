@@ -1,9 +1,5 @@
 package game.objects;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
 import game.Content;
 import game.MyConst;
 import game.ai.EnemyState;
@@ -14,6 +10,11 @@ import game.objects.guns.MchineGun;
 import game.objects.guns.Pistol;
 import game.objects.guns.Shotgun;
 import game.states.PlayState;
+import game.visuals.BouncingLaser;
+import game.visuals.LaserCallback;
+
+import java.util.LinkedList;
+
 import box2dLight.ConeLight;
 
 import com.badlogic.gdx.Gdx;
@@ -21,7 +22,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
@@ -30,10 +31,11 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class Player extends GameObject implements Updatable{
 	private Sprite testSprite;
+	private BouncingLaser laser;
 	private Gun gun;
 	private LinkedList<Gun> guns=new LinkedList<Gun>();
 	private GameObject picked=null;
-	private int numGranades=1;
+	private int numGranades=100;
 	private ConeLight light;
 	public Player(PlayState state, Vector2 position) {
 		
@@ -51,11 +53,14 @@ public class Player extends GameObject implements Updatable{
     			9, 0, 0, imgRotation,25);
         light.setSoftnessLength(1f);
         light.setContactFilter((short)(MyConst.CATEGORY_PLAYER|MyConst.CATEGORY_BULLETS), (short)0,(short)(MyConst.MASK_PLAYER&MyConst.MASK_BULLETS));
+        laser=new BouncingLaser(state);
 	}
 	
 	
 	
 	public void update(float delta){
+		
+		
 		if(health<=0){
 			body.setActive(false);
 			return;
@@ -83,9 +88,11 @@ public class Player extends GameObject implements Updatable{
 		direction=c;
 		imgRotation=direction.angle();
 		
+		laser.updateLaser(getPosition(), direction.cpy().nor());
+	
 		//shooting
 		if(Gdx.input.isButtonPressed(0)&&Gdx.input.isTouched()){
-			gun.pullTrigger(c);
+			gun.pullTrigger(direction);
 		}
 		if(Gdx.input.isButtonPressed(1)&&Gdx.input.justTouched()){
 			Enemy e=nearestEnemy();
@@ -172,7 +179,15 @@ public class Player extends GameObject implements Updatable{
 	}
 
 	
+	@Override
+	public void draw(SpriteBatch batch) {
+		//laser.draw(batch);
+		super.draw(batch);
+	}
 	
+	public void debugDraw(ShapeRenderer sr){
+		laser.draw(sr);
+	}
 
 	public Gun getGun() {
 		return gun;
