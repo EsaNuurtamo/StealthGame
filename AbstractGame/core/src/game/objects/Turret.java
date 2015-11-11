@@ -3,66 +3,55 @@ package game.objects;
 import game.Content;
 import game.MyConst;
 import game.states.PlayState;
-import game.visuals.BouncingLaser;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
-public class Box extends GameObject implements Updatable{
-	private BouncingLaser laser;
-	public Box(PlayState state, Vector2 position) {
-		this(state, position,0.3f);
-		
-		
+public class Turret extends GameObject implements Updatable{
+	protected Sprite curTexture2;
+    protected float imgRotation2;
+    boolean alerted=false;
+	public Turret(PlayState state, Vector2 position) {
+		super(state, position);
+		curTexture=new Sprite(Content.atlas.findRegion("Turret_base"));
+		curTexture2=new Sprite(Content.atlas.findRegion("Turret1"));;
 		
 	}
-	public Box(PlayState state, Vector2 position, float radius) {
-		super(state, position,radius);
-		curTexture=new Sprite(Content.atlas.findRegion("Box"));
-		this.laser=new BouncingLaser(state);
+	
+	
+	
+	
+	
+	@Override
+	public void draw(SpriteBatch batch) {
+		super.draw(batch);
+		batch.draw(
+        		curTexture2, body.getPosition().x-imgWidth/2, body.getPosition().y-imgHeight/2, 
+	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation2-90
+	    );
 	}
+
+
+
 	@Override
 	public void update(float delta) {
-		if(laser==null)System.out.println("wad?");
-		imgRotation=(float)Math.toDegrees(body.getAngle());
-		direction.setAngle(imgRotation);
-		//laser.updateLaser(getPosition(), direction.cpy().nor());
-		if(dying){
-			/*for(int i=0;i<5;i++){
-				state.addObj(new Box(state, getPosition(),radius*0.7f));
-			}*/
-			setDestroyed(true);
-			
-		}
-		
-		
-		
-	}
-	
-	
-	@Override
-	public void drawShape(ShapeRenderer sr) {
-		if(laser==null)System.out.println("haha");
-		//laser.draw(sr);
+		direction=state.getPlayer().getPosition().cpy().sub(getPosition()).nor();
+		imgRotation2=direction.angle();
 	}
 	@Override
 	public void init(Vector2 position) {
 		// First we create a body definition
     	BodyDef bodyDef = new BodyDef();
     	// We set our body to dynamic, for something like ground which doesn't move we would set it to StaticBody
-    	bodyDef.type = BodyType.DynamicBody;
+    	bodyDef.type = BodyType.StaticBody;
     	// Set our body's starting position in the world
     	bodyDef.position.set(position);
-    	bodyDef.linearDamping=10f;
-    	bodyDef.angularDamping=10f;
+    	
     	
     	body = state.getWorld().createBody(bodyDef);
     	
@@ -76,7 +65,7 @@ public class Box extends GameObject implements Updatable{
     	// Create a fixture definition to apply our shape to
     	FixtureDef fixtureDef = new FixtureDef();
     	fixtureDef.shape = circle;
-    	fixtureDef.density = 10f; 
+    	fixtureDef.density = 0.5f; 
     	fixtureDef.friction = 0.4f;
     	fixtureDef.restitution = 0.0f; // Make it bounce a little bit
     	fixtureDef.filter.categoryBits=MyConst.CATEGORY_SCENERY;
@@ -87,11 +76,5 @@ public class Box extends GameObject implements Updatable{
     	// Remember to dispose of any shapes after you're done with them!
     	// BodyDef and FixtureDef don't need disposing, but shapes do.
     	circle.dispose();
-    	
 	}
-	@Override
-	public void drawEffects(SpriteBatch batch) {
-		//laser.draw(batch);
-	}
-
 }

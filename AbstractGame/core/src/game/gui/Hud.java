@@ -1,5 +1,6 @@
 package game.gui;
 
+import sun.font.GlyphLayout;
 import game.MyConst;
 import game.objects.Updatable;
 import game.states.PlayState;
@@ -91,6 +92,7 @@ public class Hud implements Updatable{
 	}
 	
 	public void drawGunAndAmmo(){
+		
 		font.draw(batch, state.getPlayer().getGun().getClass().getSimpleName(), 10, MyConst.APP_HEIGHT-50);
 		font.draw(batch, state.getPlayer().getGun().getInClip()+"/"+state.getPlayer().getGun().getAmmo(), 170, MyConst.APP_HEIGHT-50);
 	}

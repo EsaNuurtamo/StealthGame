@@ -23,15 +23,16 @@ import game.tools.VisibleCallback;
 import game.visuals.Effect;
 
 public class Granade extends GameObject implements Updatable{
-	private float explosionRadius=4;
+	private float explosionRadius=3;
 	private float timer=0;
 	private VisibleCallback rayCast;
-	public Granade(PlayState state, Vector2 position) {
+	public Granade(PlayState state, Vector2 position, boolean friendly) {
 		super(state, position, 0.15f);
 		curTexture=new Sprite(Content.atlas.findRegion("Grenade"));
 		imgWidth=(radius*8);
     	imgHeight=(radius*8);
         speed=10;
+        this.friendly=friendly;
         Timer.schedule(new Task(){
         	@Override
 			public void run() {
@@ -65,7 +66,7 @@ public class Granade extends GameObject implements Updatable{
     	fixtureDef.shape = circle;
     	fixtureDef.density = 0.2f; 
     	fixtureDef.friction = 0.0f;
-    	fixtureDef.restitution=1;
+    	fixtureDef.restitution=0.4f;
     	fixtureDef.filter.categoryBits=MyConst.CATEGORY_BULLETS;
     	fixtureDef.filter.maskBits=MyConst.MASK_BULLETS;
     	// Create our fixture and attach it to the body
@@ -88,12 +89,12 @@ public class Granade extends GameObject implements Updatable{
 		super.setDestroyed(destroyed);
 		for(GameObject obj:MyUtils.objInRange(state.getObjects(), getPosition(), explosionRadius)){
 			if(obj instanceof Enemy|| obj instanceof Player){
-				if(isObjectInView(obj)){
+				if(isObjectInView(obj)&&obj.isFriendly()!=isFriendly()){
 					obj.setHealth(obj.getHealth()-200);;
 				}
 			}
 		}
-		state.addObj(new Effect(state, getPosition(),Effect.EXPLOSION));
+		state.addObj(new Effect(state, getPosition().cpy(),Effect.EXPLOSION));
 		Content.getSound("explosion").play();
 	}
 	

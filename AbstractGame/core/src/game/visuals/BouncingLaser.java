@@ -26,7 +26,7 @@ public class BouncingLaser {
 		len=0f;
 		Vector2 direction=startDir;
 		Vector2 start=firstStart;
-		while(len<100){
+		while(len<30){
 			caster.reset();
 			Vector2 end=start.cpy().add(direction.nor().scl(30));
 			if(end.cpy().sub(start).len()<=0||end.equals(start)||Float.isNaN(end.x)||Float.isNaN(end.y)){

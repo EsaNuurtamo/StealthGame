@@ -22,8 +22,10 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 
 public abstract class GameObject{
+	protected boolean friendly=false;
 	protected Body body;
 	protected Fixture fixture;
+	protected float density=0;
     protected PlayState state;
 	protected float speed;
 	protected Vector2 direction;
@@ -41,7 +43,7 @@ public abstract class GameObject{
     protected boolean destroyed;
 	protected float health=5f;
 	protected float maxHealth=5f;
-
+    protected boolean picked=false;
     public void init(Vector2 position) {
     	
     	// First we create a body definition
@@ -61,7 +63,7 @@ public abstract class GameObject{
     	// Create a fixture definition to apply our shape to
     	FixtureDef fixtureDef = new FixtureDef();
     	fixtureDef.shape = circle;
-    	fixtureDef.density = 0.5f; 
+    	fixtureDef.density = density; 
     	fixtureDef.friction = 0.4f;
     	fixtureDef.restitution = 0.6f; // Make it bounce a little bit
         
@@ -102,7 +104,7 @@ public abstract class GameObject{
     	imgWidth=radius*2*1.85f;
     	imgHeight=radius*2*1.85f;
     	imgRotation=0;
-    	
+    	density=0.5f;
     	destroyed=false;
     	
     	dying=false;
@@ -132,6 +134,9 @@ public abstract class GameObject{
     	        );
     		
     	}
+    }
+    public void drawEffects(SpriteBatch batch){
+    	
     }
     
     public void destroy(){
@@ -220,4 +225,7 @@ public abstract class GameObject{
     public Vector2 getAnimLoc() {
 		return animLoc;
 	}
+    public boolean isFriendly(){
+    	return friendly;
+    }
 }

@@ -31,6 +31,7 @@ public class MyConst {
     public static final short CATEGORY_SCENERY = 4;
     public static final short CATEGORY_ENEMY = 8;
     public static final short CATEGORY_ON_FLOOR=16;
+    public static final short MASK_LIGHTS=CATEGORY_SCENERY;
     public static final short MASK_BULLETS=CATEGORY_ENEMY|CATEGORY_PLAYER|CATEGORY_SCENERY;
     
     public static final short MASK_PLAYER=CATEGORY_ENEMY|CATEGORY_SCENERY|CATEGORY_BULLETS;
@@ -44,7 +45,9 @@ public static BitmapFont font =new BitmapFont();
     
     public static void createSkin(){
     	font=new BitmapFont();
-    	font.setScale(0.01f);
+    	font.getData().setScale(0.01f);
+    	
+    	
         skin = new Skin();
 	
         //TEXTURES///////
@@ -66,16 +69,17 @@ public static BitmapFont font =new BitmapFont();
 	
 		//FONTS/////////////////////
 		BitmapFont bfont=new BitmapFont(Gdx.files.internal("fonts/mainFont.fnt"));
-		bfont.scale(0.02f);
+		bfont.getData().setScale(0.02f);
+		
 		skin.add("default",bfont);
 		
 		bfont=new BitmapFont(Gdx.files.internal("fonts/mainFont.fnt"));
-		bfont.scale(0.3f);
+		bfont.getData().setScale(3f);
 		//bfont.setColor(Color.BLACK);
 		skin.add("titleFont",bfont);
 		
 		bfont=new BitmapFont();
-		bfont.scale(1.0f);
+		bfont.getData().setScale(1f);
 		skin.add("scoreFont",bfont);
 		/////////////////////////////
 		

@@ -30,7 +30,7 @@ public class Bullet extends GameObject implements Updatable{
 	  
 	float animTime=0;
 	private boolean red=false;
-    public Bullet(PlayState state, Vector2 position) {
+    public Bullet(PlayState state, Vector2 position, boolean friendly) {
         super(state, position, 0.1f);
         curTexture=new Sprite(Content.atlas.findRegion("Bullet"));
         
@@ -38,7 +38,7 @@ public class Bullet extends GameObject implements Updatable{
     	imgHeight=(radius*10);
         speed=20;
         dying=false;
-        
+        this.friendly=friendly;
     }
     
     @Override

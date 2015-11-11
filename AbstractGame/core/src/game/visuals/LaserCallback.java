@@ -35,7 +35,9 @@ public class LaserCallback implements RayCastCallback{
 	public float reportRayFixture(Fixture fixture, Vector2 point,
 			Vector2 normal, float fraction) {
 		if(fixture.getFilterData().categoryBits==MyConst.CATEGORY_ON_FLOOR||
-		   fixture.getFilterData().categoryBits==MyConst.CATEGORY_ENEMY
+		   fixture.getFilterData().categoryBits==MyConst.CATEGORY_ENEMY||
+		   fixture.getFilterData().categoryBits==MyConst.CATEGORY_PLAYER||
+		   fixture.getFilterData().categoryBits==MyConst.CATEGORY_BULLETS
 				)return 1;
 		
 		if(fraction<smallest){

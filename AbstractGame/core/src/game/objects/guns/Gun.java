@@ -121,7 +121,7 @@ public abstract class Gun implements Updatable{
     
     public void spawnBullet(Vector2 direction){
     	shooter.alertAllNear();
-    	Bullet b=new Bullet(shooter.getState(), shooter.getPosition().cpy().add(shooter.getDirection().cpy().limit(shooter.getRadius()+0.2f)));
+    	Bullet b=new Bullet(shooter.getState(), shooter.getPosition().cpy().add(shooter.getDirection().cpy().limit(shooter.getRadius()+0.2f)),shooter.isFriendly());
     	
     	b.setDirection(direction.nor());
     	b.setImgRotation(direction.angle()-90);

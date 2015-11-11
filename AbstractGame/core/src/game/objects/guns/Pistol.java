@@ -26,7 +26,7 @@ public class Pistol extends Gun{
         reloadtime=2f;
         clipSize=15;
         inClip=clipSize;
-        ammo=5*clipSize;
+        ammo=0*clipSize;
         shootSFX=Content.getSound("shootPistol");
         reloadSFX=Content.getSound("reloadPistol");
     }

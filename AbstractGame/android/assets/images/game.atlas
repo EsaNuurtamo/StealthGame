@@ -88,9 +88,51 @@ Health
   orig: 64, 64
   offset: 0, 0
   index: -1
-Player
+Kamikaze_robot
   rotate: false
   xy: 1614, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Laser
+  rotate: false
+  xy: 1872, 130
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Miniboss1
+  rotate: false
+  xy: 1680, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Player
+  rotate: false
+  xy: 1938, 130
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Player_grab
+  rotate: false
+  xy: 1746, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Turret1
+  rotate: false
+  xy: 1812, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Turret_base
+  rotate: false
+  xy: 1878, 64
   size: 64, 64
   orig: 64, 64
   offset: 0, 0

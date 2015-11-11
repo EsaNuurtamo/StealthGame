@@ -207,6 +207,9 @@ public enum EnemyState implements State<Enemy>{
     CHASING() {
         @Override
         public void update(Enemy enemy) {
+        	
+        	
+        	
         	Vector2 v=enemy.getState().getPlayer().getPosition().cpy().sub(enemy.getPosition()).nor().scl(enemy.getSpeed());
         	if(enemy.getPosition().dst(enemy.getState().getPlayer().getPosition())>3)enemy.getBody().setLinearVelocity(v);
     		enemy.setTargetRotation(v.angle());
@@ -215,6 +218,8 @@ public enum EnemyState implements State<Enemy>{
         		enemy.setShootTimer(enemy.getShootTimer()-0.2f);
         		enemy.shootPlayer();
         	}
+        	
+        	
         	
         	if(!enemy.seePlayer()){
         		//System.out.println("nosee");
@@ -226,7 +231,7 @@ public enum EnemyState implements State<Enemy>{
 
 		@Override
 		public void enter(Enemy enemy) {
-			
+			//enemy.throwGranade();
 			
 			enemy.setReactionTimer(0);
 			enemy.getLight().setColor(new Color(1f,0,0,0.4f));

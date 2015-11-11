@@ -3,6 +3,7 @@ package game.objects;
 import game.Content;
 import game.MyConst;
 import game.ai.EnemyState;
+import game.objects.guns.Granade;
 import game.objects.guns.Gun;
 import game.objects.guns.Pistol;
 import game.states.PlayState;
@@ -29,44 +30,47 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 
 public class Enemy extends GameObject implements Updatable{
-	private Vector2 start=new Vector2();
-	private Vector2 target=new Vector2();
-	private StateMachine<Enemy> stateMachine;
-	private GameObject objectSeen;
-	private float visionLen=10;
-	private Player player;
-	private float FOV=120f;
+	protected Vector2 start=new Vector2();
+	protected Vector2 target=new Vector2();
+	protected StateMachine<Enemy> stateMachine;
+	protected GameObject objectSeen;
+	protected float visionLen=10;
+	protected Player player;
+	protected float FOV=120f;
 	//gun
-	private Gun gun;
-	private float shootTimer;
+	protected Gun gun;
+	protected float shootTimer;
 	
 	//path
-	private Vector2[] patrolPath;
-	private Vector2[] path;
-	private int waypoint=0;
+	protected Vector2[] patrolPath;
+	protected Vector2[] path;
+	protected int waypoint=0;
 	float tolerance=0.2f;
 	float pathLength=0;
 	float finderInterval=1f;
 	
 	//ai
 	
-	private float pathTimer=0;
-	private float giveUpTimer=0;
-	private float lookoutTimer=0;
-	private float turnTimer=0;
-	private float reactionTimer=0;
-	private float pathfindTimer=0;
+	protected float pathTimer=0;
+	protected float giveUpTimer=0;
+	protected float lookoutTimer=0;
+	protected float turnTimer=0;
+	protected float reactionTimer=0;
+	protected float pathfindTimer=0;
+	public float granadetimer=0;
 	//flashlight
-	private ConeLight light;
-	private VisibleCallback visibility;
+	protected ConeLight light;
+	protected VisibleCallback visibility;
 	
-	private boolean dying;
+	protected boolean dying;
     
 	//target rotation for smooth rotation
-    private float targetRotation;
-    
+	protected float targetRotation;
+    //physical properties
+	
 	public Enemy(PlayState state, Vector2 position) {
 		super(state, position, 0.3f);
+		friendly=false;
 		health=20;
 		direction=new Vector2(0,1);
 		curTexture=new Sprite(Content.atlas.findRegion("Enemy"));
@@ -74,7 +78,7 @@ public class Enemy extends GameObject implements Updatable{
 		shootTimer=0f;
 	    dying=false;
         speed=1;
-        light=new ConeLight(state.getRayHandler(), 60, new Color(0.3f,0.3f,0.3f,0.4f),
+        light=new ConeLight(state.getRayHandler(), 60, new Color(1f,1f,1f,0.4f),
     			9, 0, 0, imgRotation,25);
         light.setSoftnessLength(1f);
         light.setContactFilter((short)(MyConst.CATEGORY_PLAYER|MyConst.CATEGORY_BULLETS), (short)0,(short)(MyConst.MASK_PLAYER&MyConst.MASK_BULLETS));
@@ -104,7 +108,7 @@ public void init(Vector2 position) {
     	// Create a fixture definition to apply our shape to
     	FixtureDef fixtureDef = new FixtureDef();
     	fixtureDef.shape = circle;
-    	fixtureDef.density = 0.5f; 
+    	fixtureDef.density = 6f; 
     	fixtureDef.friction = 0.4f;
     	fixtureDef.restitution = 0.6f; // Make it bounce a little bit
     	fixtureDef.filter.categoryBits=MyConst.CATEGORY_ENEMY;
@@ -131,6 +135,7 @@ public void init(Vector2 position) {
 	
 	@Override
 	public void update(float delta) {
+		if(state.getPlayer().isDestroyed())stateMachine.changeState(EnemyState.WALK_TO_PATROL);
 		if(dying)return;
 		if(health<=0&&!animated){
 			imgHeight*=2;
@@ -153,14 +158,8 @@ public void init(Vector2 position) {
 			animTime+=delta;
 			return;
 		}
+		updateTime(delta);
 		
-		pathTimer+=delta;
-		giveUpTimer+=delta;
-		lookoutTimer+=delta;
-		turnTimer+=delta;
-		reactionTimer+=delta;
-		shootTimer+=delta;
-		pathfindTimer+=delta;
 		stateMachine.update();
 		gun.update(delta);
 		handleRotation(delta);
@@ -168,6 +167,37 @@ public void init(Vector2 position) {
         light.setPosition(getPosition());
 		light.setDirection(imgRotation);
 		
+		
+	}
+	
+	public void resetTimers(){
+		pathTimer=0;
+		giveUpTimer=0;
+		lookoutTimer=0;
+		turnTimer=0;
+		reactionTimer=0;
+		shootTimer=0;
+		pathfindTimer=0;
+		granadetimer=0;
+	}
+	
+	public void updateTime(float delta){
+		pathTimer+=delta;
+		giveUpTimer+=delta;
+		lookoutTimer+=delta;
+		turnTimer+=delta;
+		reactionTimer+=delta;
+		shootTimer+=delta;
+		pathfindTimer+=delta;
+		granadetimer+=delta;
+	}
+	
+	public void throwGranade(){
+		
+			Granade g=new Granade(state,getPosition().cpy().add(direction.cpy().nor().scl(0.25f)),false);
+			g.setDirection(direction);
+			g.getBody().applyLinearImpulse(direction.cpy().nor().scl(0.6f), getPosition(), true);
+			state.addObj(g);
 		
 	}
 	

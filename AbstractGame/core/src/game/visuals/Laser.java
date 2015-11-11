@@ -15,7 +15,8 @@ public class Laser {
 	TextureRegion tr;
 	
 	public Laser(Vector2 start, Vector2 contact) {
-		tr=Content.atlas.findRegion("Enemy");
+		tr=Content.atlas.findRegion("Laser");
+		if(tr==null)System.out.println("null");
 	    this.start=start;
 	    this.contact=contact;
 	}

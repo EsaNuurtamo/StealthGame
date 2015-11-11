@@ -9,8 +9,10 @@ import game.objects.Box;
 import game.objects.Bullet;
 import game.objects.Enemy;
 import game.objects.GameObject;
+import game.objects.KamikazeRobot;
 import game.objects.Pickable;
 import game.objects.Player;
+import game.objects.Turret;
 import game.objects.Updatable;
 import game.tools.Contacts;
 import game.tools.MapBodyBuilder;
@@ -21,6 +23,7 @@ import java.util.List;
 
 import org.xguzm.pathfinding.gdxbridge.NavTmxMapLoader;
 
+import box2dLight.ChainLight;
 import box2dLight.Light;
 import box2dLight.PointLight;
 import box2dLight.RayHandler;
@@ -51,6 +54,8 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.RayCastCallback;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -63,7 +68,7 @@ public class PlayState implements Screen{
 	//Objects
 	private boolean inLight=true;
 	private Player player;
-	private List<GameObject> objects;
+	public List<GameObject> objects;
 	private List<GameObject> objsToAdd;
 	private TiledMap map;
 	private TiledMapRenderer mapRenderer;
@@ -86,7 +91,7 @@ public class PlayState implements Screen{
     private World world=new World(new Vector2(0, 0), true);
     private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
     private RayHandler rayHandler; 
-    private List<PointLight> lights=new ArrayList<PointLight>();
+    private List<Light> lights=new ArrayList<Light>();
     
     //hud
     private Hud hud;
@@ -118,18 +123,22 @@ public class PlayState implements Screen{
         hud=new Hud(this);
 		Array<Body> bodies=MapBodyBuilder.buildTiles(map, world,this);
 		rayHandler = new RayHandler(world); 	
-		rayHandler.setAmbientLight(0.03f, 0.03f, 0.03f, 0.6f);
+		rayHandler.setAmbientLight(0.05f, 0.05f, 0.05f, 0.2f);
 		rayHandler.setBlurNum(3);
 		MapBodyBuilder.buildLights(map, rayHandler,this);
 		
 		
-		Light.setContactFilter(MyConst.CATEGORY_BULLETS,(short)0,MyConst.MASK_BULLETS);
+		Light.setGlobalContactFilter(MyConst.CATEGORY_BULLETS,(short)0,MyConst.MASK_LIGHTS);
 		world.setContactListener(new Contacts(this));
 		world.setWarmStarting(true);
 		MapBodyBuilder.initFinder(map);
 		//object creation
 		player=new Player(this,new Vector2(10,7));
+		
         objects=new ArrayList<GameObject>();
+        objects.add(player);
+        objects.add(new Turret(this,new Vector2(7,7)));
+        objects.add(new KamikazeRobot(this, new Vector2(16,6)));
 		createEnemies();
 		objsToAdd=new ArrayList<GameObject>();
 		
@@ -137,7 +146,8 @@ public class PlayState implements Screen{
 	    camera.update();
 	    
 	    Pixmap pm = new Pixmap(Gdx.files.internal("images/Crosshair.png"));
-	    Gdx.input.setCursorImage(pm, pm.getWidth()/2, pm.getHeight()/2);
+	    //Gdx.input.setCursorImage(pm, (int)(pm.getWidth()/2), (int)(pm.getHeight()/2));
+	    
 	    pm.dispose();
     }
     
@@ -157,12 +167,14 @@ public class PlayState implements Screen{
     	mapRenderer.render();
         debugRenderer.render(world, camera.combined);
     	
-    	//----------------Sprites--------------------------------
+      
+        
+        //----------------Sprites--------------------------------
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         
         for(GameObject obj:objects){
-    		if(!isInView(obj.getPosition()))
+    		if(!isInView(obj.getPosition())||obj instanceof Player)
     		{
     			continue;
     		}
@@ -177,6 +189,19 @@ public class PlayState implements Screen{
         //draw lights
         rayHandler.setCombinedMatrix(camera.combined);
         rayHandler.updateAndRender();
+        
+        //draw lasers ect. on top of light layer
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        for(GameObject obj:objects){
+    		if(!isInView(obj.getPosition()))
+    		{
+    			continue;
+    		}
+        	obj.drawEffects(batch);
+        }
+        
+        batch.end();
         
         
         
@@ -249,14 +274,14 @@ public class PlayState implements Screen{
     }
     
     public boolean isPlayerInLight(){
-    	for(PointLight pl:lights){
+    	for(Light pl:lights){
     		if(pl.contains(player.getPosition().x, player.getPosition().y))return true;
     	}
     	return false;
     }
     
     public void updateObjects(float delta){
-    	if(!player.isDestroyed())player.update(delta);
+    	
     	if(isPlayerInLight()){
     		  inLight=true;
     	}else inLight=false;
@@ -282,12 +307,32 @@ public class PlayState implements Screen{
     	objsToAdd.add(obj);
     	
     }
+    public PlayState get(){
+    	return this;
+    }
     
     /**
      * Creates one enemy for every path on the map
      */
     public void createEnemies(){
+    	MapBodyBuilder.buildObjects(map, this);
     	for(Vector2[] vect:MapBodyBuilder.buildPaths(map)){
+    		final Vector2 v=vect[0];
+    		/*Timer.schedule(new Task(){
+
+				@Override
+				public void run() {
+					addObj(new Enemy(get(),v));
+					
+				}
+    			
+    		}, 0f,5f);*/
+    		float[] ooho=new float[vect.length*2];
+    		for(int i=0;i<vect.length;i++){
+    			ooho[i*2]=vect[i].x;
+    			ooho[i*2+1]=vect[i].y;
+    		}
+    		//lights.add(new ChainLight(rayHandler, 50, new Color(1f,1f,1f,0.6f), 1,1,ooho));
     		Enemy e=new Enemy(this, vect[0]);
     		e.setPatrolPath(vect);
     		objects.add(e);
@@ -371,7 +416,7 @@ public class PlayState implements Screen{
    public TiledMap getMap() {
 	return map;
 }
-   public List<PointLight> getLights() {
+   public List<Light> getLights() {
 	return lights;
 }
    

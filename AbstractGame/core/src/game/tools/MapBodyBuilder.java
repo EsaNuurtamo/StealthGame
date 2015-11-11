@@ -1,6 +1,7 @@
 package game.tools;
 
 import game.MyConst;
+import game.objects.Box;
 import game.objects.Wall;
 import game.states.PlayState;
 
@@ -28,6 +29,7 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Ellipse;
 import com.badlogic.gdx.math.Rectangle;
@@ -100,6 +102,17 @@ public class MapBodyBuilder {
         return bodies;
     }
     
+    public static void buildObjects(Map map,PlayState state){
+    	MapLayer tl=map.getLayers().get("Objects");
+    	for(MapObject obj : tl.getObjects()){
+    		
+    		TiledMapTileMapObject object = (TiledMapTileMapObject)obj;
+    		if(object.getTile().getProperties().get("type").equals("health_")){
+    			state.addObj(new Box(state,new Vector2(object.getX(),object.getY())));
+    		}
+    	}
+    }
+    
     public static void buildLights(Map map, RayHandler ray,PlayState state){
     	MapLayer tl=map.getLayers().get("Lights");
     	for(MapObject obj: tl.getObjects()){
@@ -115,7 +128,7 @@ public class MapBodyBuilder {
     		point.setSoftnessLength(1f);
     		point.setStaticLight(true);
     		state.getLights().add(point);
-    		PointLight p=new PointLight(ray, dist*50, new Color(0.3f,0.3f,0.3f,0.3f), dist, c.x/ppt, c.y/ppt);
+    		PointLight p=new PointLight(ray, dist*50, new Color(1f,1f,1f,0.6f), dist, c.x/ppt, c.y/ppt);
     		p.setSoftnessLength(1f);
     		
     	}  
@@ -240,25 +253,12 @@ public class MapBodyBuilder {
     }
     
     public static void initFinder(Map map){
-    	
-        
-        GridFinderOptions opt = new GridFinderOptions();
+    	GridFinderOptions opt = new GridFinderOptions();
         opt.allowDiagonal = true;
         finder = new AStarGridFinder(GridCell.class, opt);
     }
     
     public static Vector2[] findPath(Vector2 v1, Vector2 v2, Map map){
-    	/*List<GridCell> pathToEnd = finder.findPath((int)(v1.x*MyConst.TILES_IN_M), (int)(v1.y/MyConst.TILES_IN_M), 
-    											   (int)(v2.x*MyConst.TILES_IN_M), (int)(v2.y/MyConst.TILES_IN_M), navGrid);
-    	Vector2[] list=new Vector2[pathToEnd.size()];
-    	int index=0;
-    	for(GridCell c:pathToEnd){
-    		Vector2 v=new Vector2(c.x+0.5f, c.y+0.5f);
-    		list[index]=v;
-    		index++;
-    	}
-    	return list;*/
-    	
     	List<GridCell> pathToEnd = finder.findPath((int)(v1.x*MyConst.TILES_IN_M), (int)(v1.y*MyConst.TILES_IN_M), 
 				   (int)(v2.x*MyConst.TILES_IN_M), (int)(v2.y*MyConst.TILES_IN_M), navGrid);
     	

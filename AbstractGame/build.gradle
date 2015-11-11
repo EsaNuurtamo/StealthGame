@@ -23,8 +23,8 @@ allprojects {
     version = '1.0'
     ext {
         appName = 'AbstractGame'
-        gdxVersion = '1.4.1'
-        roboVMVersion = '1.0.0-alpha-04'
+        gdxVersion = '1.7.0'
+        roboVMVersion = '1.8.0'
     }
 
     repositories {
@@ -56,8 +56,8 @@ project(":android") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        compile "com.badlogicgames.box2dlights:box2dlights:1.2"
-        compile "com.github.xaguzman:pathfinding:0.2.4-SNAPSHOT"
+        compile "com.badlogicgames.box2dlights:box2dlights:1.4"
+        compile "com.github.xaguzman:pathfinding:0.2.6"
         
         compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
@@ -67,7 +67,7 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86"
-        compile "com.badlogicgames.box2dlights:box2dlights:1.2"
+        compile "com.badlogicgames.box2dlights:box2dlights:1.4"
         
     }
 }
@@ -100,7 +100,7 @@ project(":html") {
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-box2d-gwt:$gdxVersion:sources"
-        compile "com.badlogicgames.box2dlights:box2dlights:1.2:sources"
+        compile "com.badlogicgames.box2dlights:box2dlights:1.4:sources"
     }
 }
 
@@ -111,10 +111,10 @@ project(":core") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        compile "com.badlogicgames.box2dlights:box2dlights:1.2"
-        compile "com.github.xaguzman:pathfinding:0.2.4-SNAPSHOT"
-        compile "com.github.xaguzman:pathfinding-gdx-bridge:0.2.4-SNAPSHOT"
-        compile "com.badlogicgames.gdx:gdx-ai:1.4.0"
+        compile "com.badlogicgames.box2dlights:box2dlights:1.4"
+        compile "com.github.xaguzman:pathfinding:0.2.6"
+        compile "com.github.xaguzman:pathfinding-gdx-bridge:0.2.6"
+        compile "com.badlogicgames.gdx:gdx-ai:1.6.0"
     }
 }
 

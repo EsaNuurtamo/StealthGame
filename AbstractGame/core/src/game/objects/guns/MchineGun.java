@@ -9,8 +9,8 @@ public class MchineGun extends Gun{
         fireRate=0.1f;
         reloadtime=3f;
         clipSize=50;
-        inClip=clipSize;
-        ammo=350;
+        inClip=0;
+        ammo=0;
         shootSFX=Content.getSound("shootMG");
         reloadSFX=Content.getSound("reloadMG");
     }

@@ -70,7 +70,7 @@ public class Contacts implements ContactListener{
 		//effect type
 		int type=Effect.OBJECT_HIT;
 		
-		if(other instanceof Enemy|| other instanceof Player){
+		if((other instanceof Enemy|| other instanceof Player)&&other.isFriendly()!=bullet.isFriendly()){
         	((Bullet)bullet).setRed(true);
         	other.setHealth(other.getHealth()-10);
         	type=Effect.ENTITY_HIT;
@@ -91,7 +91,7 @@ public class Contacts implements ContactListener{
     	
     	if(!bullet.isDestroyed()){
 			bullet.setDestroyed(true);
-			state.addObj(new Effect(state,bullet.getPosition().cpy(),Effect.OBJECT_HIT));
+			state.addObj(new Effect(state,bullet.getPosition().cpy(),type));
 		}
 	}
 	

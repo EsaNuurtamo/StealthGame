@@ -31,6 +31,7 @@ public class Effect extends GameObject implements Updatable{
 			imgWidth=5;
 			imgHeight=5;
 			light=new PointLight(state.getRayHandler(),50, new Color(0.5f,0.5f,0.5f,0.5f), 4f, position.x, position.y);
+			color=Color.CYAN;
 			break;
 		case ENTITY_HIT:
 			animation=Content.animations.get("Explosion");
