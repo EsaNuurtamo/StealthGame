@@ -5,17 +5,17 @@ import com.badlogic.gdx.math.Vector2;
 
 import game.Content;
 import game.objects.GameObject;
-import game.objects.Player;
+import game.objects.organic.Player;
 
 public class Shotgun extends Gun{
 
 	public Shotgun(GameObject shooter) {
 		super(shooter);
-		fireRate=1f;
+		fireRate=0f;
         reloadtime=4f;
-        clipSize=6;
-        inClip=0;
-        ammo=clipSize*0;
+        clipSize=5000;
+        inClip=5000;
+        ammo=clipSize*1;
         shootSFX=Content.getSound("shootShotgun");
         reloadSFX=Content.getSound("reloadShotgun");
 	}

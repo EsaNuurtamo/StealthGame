@@ -86,16 +86,26 @@
    </properties>
   </tile>
  </tileset>
- <tileset firstgid="19" name="game" tilewidth="64" tileheight="64" margin="4">
-  <image source="../images/game.png" width="1024" height="256"/>
-  <tile id="22">
+ <tileset firstgid="19" name="Objects" tilewidth="64" tileheight="64">
+  <image source="Objects.png" width="512" height="255"/>
+  <tile id="0">
+   <properties>
+    <property name="type" value="ammo"/>
+   </properties>
+  </tile>
+  <tile id="1">
    <properties>
     <property name="type" value="health"/>
    </properties>
   </tile>
-  <tile id="38">
+  <tile id="2">
    <properties>
-    <property name="type" value="pistol_ammo"/>
+    <property name="type" value="player"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="type" value="box"/>
    </properties>
   </tile>
  </tileset>
@@ -304,13 +314,6 @@
    <ellipse/>
   </object>
  </objectgroup>
- <objectgroup name="Objects" width="60" height="60">
-  <object gid="59" x="1819" y="1947"/>
-  <object gid="57" x="835" y="3324"/>
-  <object type="health" gid="41" x="125" y="1433"/>
-  <object type="health" gid="41" x="1220" y="1685"/>
-  <object name="box" gid="39" x="787" y="3273"/>
- </objectgroup>
  <objectgroup name="Paths" width="60" height="60">
   <object x="903" y="2972">
    <polyline points="0,0 405,3 402,117 35,116 18,74"/>
@@ -384,9 +387,22 @@
   <object x="3405" y="2789">
    <polyline points="0,0 -14,163 52,184 79,87 67,10"/>
   </object>
-  <object name="box" gid="39" x="885" y="3278"/>
-  <object name="box" gid="39" x="891" y="3388"/>
-  <object name="box" gid="39" x="822" y="3387"/>
-  <object name="box" gid="39" x="769" y="3389"/>
+ </objectgroup>
+ <objectgroup name="Objects" width="60" height="60">
+  <object gid="23" x="891" y="3271"/>
+  <object gid="23" x="892" y="3327"/>
+  <object gid="23" x="892" y="3385"/>
+  <object gid="23" x="829" y="3388"/>
+  <object gid="23" x="771" y="3345"/>
+  <object gid="23" x="626" y="3345"/>
+  <object gid="23" x="567" y="3339"/>
+  <object gid="23" x="506" y="3338"/>
+  <object gid="23" x="464" y="3388"/>
+  <object gid="23" x="452" y="3460"/>
+  <object gid="19" x="1476" y="3439"/>
+  <object gid="20" x="833" y="3140"/>
+  <object gid="19" x="956" y="3519"/>
+  <object gid="20" x="1274" y="2317"/>
+  <object gid="21" x="132" y="1458"/>
  </objectgroup>
 </map>

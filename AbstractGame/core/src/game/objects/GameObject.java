@@ -4,6 +4,7 @@ package game.objects;
 
 import game.MyConst;
 import game.ai.EnemyState;
+import game.objects.organic.Enemy;
 import game.states.PlayState;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -123,14 +124,14 @@ public abstract class GameObject{
     		
     		batch.draw(
             		curTexture, animLoc.x-imgWidth/2, animLoc.y-imgHeight/2, 
-    	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
+    	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation-90
     	        );
     		
     	}else{
     		batch.draw(
             		
     	            curTexture, body.getPosition().x-imgWidth/2, body.getPosition().y-imgHeight/2, 
-    	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation
+    	            imgWidth/2, imgHeight/2, imgWidth, imgHeight, 1, 1, imgRotation-90
     	        );
     		
     	}
@@ -227,5 +228,12 @@ public abstract class GameObject{
 	}
     public boolean isFriendly(){
     	return friendly;
+    }
+    public void setPicked(boolean picked) {
+		this.picked = picked;
+	}
+    
+    public boolean isPicked(){
+    	return picked;
     }
 }

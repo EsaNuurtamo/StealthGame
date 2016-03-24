@@ -2,36 +2,30 @@ package game.states;
 
 import game.Content;
 import game.MyConst;
-import game.ai.EnemyState;
 import game.gui.Hud;
 import game.input.Mouse;
-import game.objects.Box;
-import game.objects.Bullet;
-import game.objects.Enemy;
+import game.map.MapBodyBuilder;
 import game.objects.GameObject;
-import game.objects.KamikazeRobot;
-import game.objects.Pickable;
-import game.objects.Player;
-import game.objects.Turret;
 import game.objects.Updatable;
+import game.objects.organic.Enemy;
+import game.objects.organic.Player;
+import game.objects.robotic.KamikazeRobot;
+import game.objects.robotic.Turret;
 import game.tools.Contacts;
-import game.tools.MapBodyBuilder;
+import game.tools.MovingCamera;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.xguzm.pathfinding.gdxbridge.NavTmxMapLoader;
-
-import box2dLight.ChainLight;
 import box2dLight.Light;
-import box2dLight.PointLight;
 import box2dLight.RayHandler;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -47,15 +41,9 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.ContactImpulse;
-import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.RayCastCallback;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Timer;
-import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -65,56 +53,88 @@ import com.badlogic.gdx.utils.viewport.Viewport;
  *
  */
 public class PlayState implements Screen{
-	//Objects
+	//flags
+	public boolean playing=false;
+	public boolean started=false;
+	private String level="Map";
 	private boolean inLight=true;
+	private Music curMusic;
+	//objects
 	private Player player;
 	public List<GameObject> objects;
 	private List<GameObject> objsToAdd;
+	
+	//map, and drawing
 	private TiledMap map;
 	private TiledMapRenderer mapRenderer;
 	private SpriteBatch batch;
-	private SpriteBatch fontbatch;
+	private ShapeRenderer srenderer;
+    
+    //camera and viewport
+	private float camOffset;
     private OrthographicCamera camera;
-    private OrthographicCamera cameraFont;
+    
     private Viewport viewport;
-    private BitmapFont font=new BitmapFont();
-    private RayCastCallback callback;
-    public static GameObject nearestSeen=null;
-    private ShapeRenderer srenderer;
-    public Vector2 vec1=new Vector2();
-    public Vector2 vec2=new Vector2();
-    private List<Vector2> linjat=new ArrayList<Vector2>();
+    
+    
     //Gamehandler;
     private Game game;
-    private float camOffset=0;
+    
+    
     //Box2d
-    private World world=new World(new Vector2(0, 0), true);
-    private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
+    private World world;
+    private Box2DDebugRenderer debugRenderer;
     private RayHandler rayHandler; 
     private List<Light> lights=new ArrayList<Light>();
+    private RayCastCallback callback;
     
     //hud
     private Hud hud;
-    public PlayState(Game g) {
-    	
-        this.game=g;  
+    public PlayState(Game g){
+    	this(g,"Map");
+    }
+    public PlayState(Game g, String lvl) {
+    	this.level=lvl;
+        this.game=g; 
+        MyConst.createSkin();
+		
+		
+		Content.loadAll();
+		
+		
+		
+        
+        //init box2d
+        world=new World(new Vector2(0, 0), true);
+        debugRenderer = new Box2DDebugRenderer();
+        
+        //lights
+        lights=new ArrayList<Light>();
         RayHandler.setGammaCorrection(true);
 		RayHandler.useDiffuseLight(true);
-		Content.loadAnimations();
-		MyConst.createSkin();
-		Content.loadAll();
+		
+		
+		//camera setup
 		camOffset=0;
+		
     }
-    
+   
     @Override
     public void show() {
+    	if(started)return;
+    	started=true;
+    	Gdx.app.debug("Report", "started PlayState.show()");
+    	//if map hasnth been loaded yet
+        curMusic=Content.music.get("Wooshing Up");
+        curMusic.setVolume(0.5f);
+        curMusic.setLooping(true);
+    	//curMusic.play();
     	
-    	loadResources();
-    	//Content.music.get("mainTheme").play();
-    	//map = new TmxMapLoader().load("maps/Test.tmx");
-    	map=new TmxMapLoader().load("maps/Map.tmx");
+    	//songs=(List<Music>)Content.music.values();
+    	map = new TmxMapLoader().load("maps/"+level+".tmx");
+    	
     	mapRenderer=new OrthogonalTiledMapRenderer(map,1/(MyConst.ORG_TILE_WIDTH*MyConst.TILES_IN_M));
-        camera=new OrthographicCamera(MyConst.APP_WIDTH/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, MyConst.APP_HEIGHT/MyConst.PIX_IN_M*MyConst.VIEW_SCALE);
+        camera=new MovingCamera(MyConst.APP_WIDTH/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, MyConst.APP_HEIGHT/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, this);
         viewport=new FitViewport(MyConst.APP_WIDTH/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, MyConst.APP_HEIGHT/MyConst.PIX_IN_M*MyConst.VIEW_SCALE, camera);
         batch=new SpriteBatch();
         batch.setProjectionMatrix(camera.combined);
@@ -133,22 +153,24 @@ public class PlayState implements Screen{
 		world.setWarmStarting(true);
 		MapBodyBuilder.initFinder(map);
 		//object creation
-		player=new Player(this,new Vector2(10,7));
+		
+		
 		
         objects=new ArrayList<GameObject>();
-        objects.add(player);
-        objects.add(new Turret(this,new Vector2(7,7)));
-        objects.add(new KamikazeRobot(this, new Vector2(16,6)));
-		createEnemies();
-		objsToAdd=new ArrayList<GameObject>();
+        objsToAdd=new ArrayList<GameObject>();
+        
+        //objects.add(new Turret(this,new Vector2(7,7)));
+        //objects.add(new KamikazeRobot(this, new Vector2(16,6)));
+		createPeople();
 		
+        
         camera.position.set(player.getPosition(), camera.position.z);
 	    camera.update();
 	    
-	    Pixmap pm = new Pixmap(Gdx.files.internal("images/Crosshair.png"));
+	    //Pixmap pm = new Pixmap(Gdx.files.internal("images/Crosshair.png"));
 	    //Gdx.input.setCursorImage(pm, (int)(pm.getWidth()/2), (int)(pm.getHeight()/2));
 	    
-	    pm.dispose();
+	    //pm.dispose();
     }
     
     public boolean isInView(Vector2 vect){
@@ -226,14 +248,14 @@ public class PlayState implements Screen{
     
     @Override
     public void render(float delta) {
+    	if(playing=false)return;
+    	
     	Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        if(Gdx.input.isKeyPressed(Keys.ESCAPE)){
-        	System.exit(0);
-        }
-        if(Gdx.input.isKeyJustPressed(Keys.L)){
-        	dispose();
-        	game.setScreen(new PlayState(game));
+        if(Gdx.input.isKeyJustPressed(Keys.ESCAPE)){
+        	game.setScreen(new PauseState(game,this));
+        	curMusic.pause();
+        	return;
         }
         
         //enable zooming with shift
@@ -245,6 +267,7 @@ public class PlayState implements Screen{
 			if(camOffset<0)camOffset=0;
 			
 		}*/
+        if(camera==null)return;
         Vector2 vect=new Vector2(camera.position.x,camera.position.y);
         if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)){
         	/*Vector2 neew=vect.cpy().add(Mouse.getWorldPos(camera).sub(vect).nor().scl(10*delta));
@@ -312,27 +335,19 @@ public class PlayState implements Screen{
     }
     
     /**
-     * Creates one enemy for every path on the map
+     * Creates one enemy for every path on the map. SEPARATE FACTORY CLASS ON THE MAKING
      */
-    public void createEnemies(){
+    public void createPeople(){
     	MapBodyBuilder.buildObjects(map, this);
+    	player=new Player(this,MapBodyBuilder.playerLoc);
+		objects.add(player);
     	for(Vector2[] vect:MapBodyBuilder.buildPaths(map)){
-    		final Vector2 v=vect[0];
-    		/*Timer.schedule(new Task(){
-
-				@Override
-				public void run() {
-					addObj(new Enemy(get(),v));
-					
-				}
-    			
-    		}, 0f,5f);*/
     		float[] ooho=new float[vect.length*2];
     		for(int i=0;i<vect.length;i++){
     			ooho[i*2]=vect[i].x;
     			ooho[i*2+1]=vect[i].y;
     		}
-    		//lights.add(new ChainLight(rayHandler, 50, new Color(1f,1f,1f,0.6f), 1,1,ooho));
+    		
     		Enemy e=new Enemy(this, vect[0]);
     		e.setPatrolPath(vect);
     		objects.add(e);
@@ -340,96 +355,86 @@ public class PlayState implements Screen{
     	//Box b=new Box(this, new Vector2(player.getPosition().x, player.getPosition().y));
     	//objects.add(b);
     }
-
+    
+    //implemented from interface from Screen
     @Override
     public void resize(int w, int h) {
     	//viewport.update((int)(w/(MyConst.PIX_IN_M*MyConst.VIEW_SCALE)), (int)(h/MyConst.PIX_IN_M*MyConst.VIEW_SCALE));
+    	if(viewport==null)return;
         viewport.update(w, h);   
     }
-
     
-
-    @Override
+    public void changeMusic(Music newMusic){
+    	curMusic.stop();
+    	curMusic.dispose();
+    	curMusic=newMusic;
+    	curMusic.setLooping(true);
+    }
     public void hide() {
         
     }
-
-    @Override
     public void pause() {
        
     }
-
     @Override
     public void resume() {
         
     }
-
-    @Override
     public void dispose() {
         Content.removeAll();
     }
-
-    public OrthographicCamera getCamera() {
-        return camera;
+    ///////////////////////////////////////
+    
+    //Getters
+    public Music getCurMusic() {
+		return curMusic;
+	}
+    public MovingCamera getCamera() {
+        return (MovingCamera)camera;
     }
-
-
-    
-    
-    
-    
-    
-    
-   
-    
-    public void loadResources(){
-       
-        
-        
-        
-    }
-
-    
     public World getWorld() {
 		return world;
 	}
-    
-    
     public List<GameObject> getObjects() {
     	return objects;
     }
-
-   public void setRayHandler(RayHandler rayHandler) {
-	this.rayHandler = rayHandler;
+    public RayHandler getRayHandler() {
+    	return rayHandler;
+    }
+    public Player getPlayer() {
+    	return player;
+       }
+    public TiledMap getMap() {
+    	return map;
+    }
+    public List<Light> getLights() {
+    	   return lights;
+       }
+    public SpriteBatch getBatch() {
+    	return batch;
+    }
+    public ShapeRenderer getSrenderer() {
+    	return srenderer;
+    }
+    public String getlevel() {
+    	return level;
+    }
+    public Viewport getViewport() {
+    	return viewport;
+       }
+    public boolean isInLight(){
+ 	   return inLight;
+    }
+    //Setters
+    public void setRayHandler(RayHandler rayHandler) {
+	   this.rayHandler = rayHandler;
    }
-   public RayHandler getRayHandler() {
-	return rayHandler;
-   }
-   public Viewport getViewport() {
-	return viewport;
-   }
-   
-   public Player getPlayer() {
-	return player;
-   }
-   
-   public TiledMap getMap() {
-	return map;
-}
-   public List<Light> getLights() {
-	return lights;
-}
-   
-   public boolean isInLight(){
-	   return inLight;
-   }
-   
-   public SpriteBatch getBatch() {
-	return batch;
-}
-   
-   public ShapeRenderer getSrenderer() {
-	return srenderer;
-}
-        
+    public void setlevel(String levelpath) {
+    	this.level=level;
+    }
+    
+    public void setCurMusic(Music curMusic) {
+		this.curMusic = curMusic;
+	}
+    
 }

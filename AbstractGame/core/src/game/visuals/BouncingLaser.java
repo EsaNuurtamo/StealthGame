@@ -11,8 +11,6 @@ import com.badlogic.gdx.math.Vector2;
 
 public class BouncingLaser {
 	private List<Laser> lasers=new ArrayList<Laser>();
-	private Vector2 startPoint=new Vector2();
-	private Vector2 direction=new Vector2();
 	private float len=0;
 	private LaserCallback caster;
 	private PlayState state;

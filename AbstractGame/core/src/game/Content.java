@@ -19,29 +19,46 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
+import com.sun.org.apache.bcel.internal.generic.LoadInstruction;
 
-
+/**
+ * This static class class acts as a hub where you can load sfx/textures/music. At the moment it loads all content at the beginning.
+ * In the future I would load only some core things in the start and when new lvl starts then everything u need in that lvl.
+ * 
+ *
+ */
 public class Content {
-        public static HashMap<String, Texture> textures=new HashMap<String, Texture>();
+	
+    public static HashMap<String, Texture> textures=new HashMap<String, Texture>();
 	public static HashMap<String, Music> music= new HashMap<String, Music>();
 	public static HashMap<String, Sound> sounds= new HashMap<String, Sound>();
 	public static TextureAtlas atlas=new TextureAtlas(Gdx.files.internal("images/game.atlas"));
-	public static HashMap<String,Animation> animations=new HashMap<String, Animation>();
+	public static HashMap<String,Animation> animations=new HashMap<String, Animation>(); 
+	public static String[] musicTags={"Eastern", "New land", "Wooshing Up", "Peaceful", "Wobbly"};
+	public static String[] levelTags={"Test", "Map", "Tutorial"};
 	
-	public static void loadAll(){
-		loadSound("sound/Pistol.wav", "shootPistol");
-		loadSound("sound/MG.wav", "shootMG");
-		loadSound("sound/Shotgun.wav", "shootShotgun");
-		loadSound("sound/PistolReload.wav", "reloadPistol");
-		loadSound("sound/MGReload.wav", "reloadMG");
-		loadSound("sound/ShotgunReload.wav", "reloadShotgun");
-		loadSound("sound/Explosion.wav", "explosion");
+	public static void changeMusicVolume(float vol){
+		for(Music m:music.values()){
+			m.setVolume(vol);
+		}
+	}
+	
+	
+	public static void loadAll(){//FIXME: get rid of loading alla and to seperate loadings for different levels
+		loadAnimations();
+	
+		loadSounds();
+	   
 		
-		loadMusic("sound/MainTheme.ogg", "mainTheme");
+		loadMusic("music/Eastern electro.ogg", musicTags[0]);
+		loadMusic("music/New Land.ogg", musicTags[1]);
+		loadMusic("music/Whooshing Up.ogg", musicTags[2]);
+		loadMusic("music/Peaceful break.ogg", musicTags[3]);
+		loadMusic("music/Wobbly Space.ogg", musicTags[4]);
 		
 	}
 	/***********/
-	/* Texture */
+	/*Animations/
 	/***********/
 	
 	public static void loadAnimations(){
@@ -58,6 +75,16 @@ public class Content {
 		a.setPlayMode(PlayMode.NORMAL);
 		animations.put("EnemyDeath", a);
 	}
+	
+	
+	
+	
+	
+	/***********/
+	/* Texture */
+	/***********/
+	
+	
     
 	
 	public static void loadTexture(String path) {
@@ -101,15 +128,14 @@ public class Content {
 		else {
 			key = path.substring(slashIndex + 1, path.lastIndexOf('.'));
 		}
+			
 		loadMusic(path, key);
 	}
 	public static void loadMusic(String path, String key) {
 		Music m = Gdx.audio.newMusic(Gdx.files.internal(path));
 		music.put(key, m);
 	}
-	public static Music getMusic(String key) {
-		return music.get(key);
-	}
+	
 	public static void removeMusic(String key) {
 		Music m = music.get(key);
 		if(m != null) {
@@ -121,6 +147,16 @@ public class Content {
 	/*******/
 	/* SFX */
 	/*******/
+	
+	public static void loadSounds(){
+		loadSound("sound/Pistol.wav", "shootPistol");
+		loadSound("sound/MG.wav", "shootMG");
+		loadSound("sound/Shotgun.wav", "shootShotgun");
+		loadSound("sound/PistolReload.wav", "reloadPistol");
+		loadSound("sound/MGReload.wav", "reloadMG");
+		loadSound("sound/ShotgunReload.wav", "reloadShotgun");
+		loadSound("sound/Explosion.wav", "explosion");
+	}
 	
 	public static void loadSound(String path) {
 		int slashIndex = path.lastIndexOf('/');

@@ -1,0 +1,5 @@
+package game.gui;
+
+public enum Level {
+	TEST,TUTORIAL,EPILOQUE,LEVEL1,LEVEL2,LEVEL3,LEVEL4,LEVEL5,PROLOQUE;
+}

@@ -12,7 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 
 import game.Content;
 import game.objects.GameObject;
-import game.objects.Player;
+import game.objects.organic.Player;
 
 /**
  *
@@ -24,9 +24,9 @@ public class Pistol extends Gun{
         super(shooter);
         fireRate=0f;
         reloadtime=2f;
-        clipSize=15;
+        clipSize=5000;
         inClip=clipSize;
-        ammo=0*clipSize;
+        ammo=1*clipSize;
         shootSFX=Content.getSound("shootPistol");
         reloadSFX=Content.getSound("reloadPistol");
     }

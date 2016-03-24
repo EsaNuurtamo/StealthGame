@@ -2,7 +2,7 @@ package game.tools;
 
 import game.MyConst;
 import game.objects.GameObject;
-import game.objects.Player;
+import game.objects.organic.Player;
 
 import java.util.ArrayList;
 import java.util.List;

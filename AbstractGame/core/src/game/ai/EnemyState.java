@@ -1,7 +1,7 @@
 package game.ai;
 
-import game.objects.Enemy;
 import game.objects.GameObject;
+import game.objects.organic.Enemy;
 import game.tools.MyUtils;
 
 import com.badlogic.gdx.Gdx;
@@ -232,7 +232,7 @@ public enum EnemyState implements State<Enemy>{
 		@Override
 		public void enter(Enemy enemy) {
 			//enemy.throwGranade();
-			
+			if(!enemy.getState().getCurMusic().isPlaying())enemy.getState().getCurMusic().play();
 			enemy.setReactionTimer(0);
 			enemy.getLight().setColor(new Color(1f,0,0,0.4f));
 			enemy.setSpeed(3);
@@ -269,6 +269,6 @@ public enum EnemyState implements State<Enemy>{
 	}
 	
 	
-	
+	///enemy state death
 	
 }

@@ -6,13 +6,23 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox.SelectBoxStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider.SliderStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
+/**
+ * MyConst has all the essential constants and also
+ * !!!!!!!!!some static content(skins mainly) created HERE SHOULD BE MOCVED SOMEWHERE ELESE !!!!!!!!!
+ *
+ */
 
 public class MyConst {
 	public static boolean DEBUGGING=true;
@@ -37,14 +47,17 @@ public class MyConst {
     public static final short MASK_PLAYER=CATEGORY_ENEMY|CATEGORY_SCENERY|CATEGORY_BULLETS;
     public static final Sound PISTOLSOUND = Gdx.audio.newSound(Gdx.files.internal("sound/Pistol.wav"));
     
-    public static float volumeSFX=1;
-    public static float volumeMusic=1;
+    public static float SFXvol=0.5f;
     
-public static Skin skin;
-public static BitmapFont font =new BitmapFont();
+    
+	public static Skin skin=new Skin();
+	public static BitmapFont font =new BitmapFont();
     
     public static void createSkin(){
+    	Gdx.app.log("Resources", "Creating Skin");
+    	
     	font=new BitmapFont();
+    	//font.getData().setScale(0.01f);
     	font.getData().setScale(0.01f);
     	
     	
@@ -69,17 +82,20 @@ public static BitmapFont font =new BitmapFont();
 	
 		//FONTS/////////////////////
 		BitmapFont bfont=new BitmapFont(Gdx.files.internal("fonts/mainFont.fnt"));
-		bfont.getData().setScale(0.02f);
+		//bfont.getData().setScale(0.02f);
+		bfont.getData().setScale(1f);
 		
 		skin.add("default",bfont);
 		
 		bfont=new BitmapFont(Gdx.files.internal("fonts/mainFont.fnt"));
+		//bfont.getData().setScale(3f);
 		bfont.getData().setScale(3f);
 		//bfont.setColor(Color.BLACK);
 		skin.add("titleFont",bfont);
 		
 		bfont=new BitmapFont();
 		bfont.getData().setScale(1f);
+		bfont.getData().setScale(2f);
 		skin.add("scoreFont",bfont);
 		/////////////////////////////
 		
@@ -113,8 +129,43 @@ public static BitmapFont font =new BitmapFont();
         fieldStyle.cursor=skin.getDrawable("purple");
         fieldStyle.cursor.setMinWidth(2f);
         skin.add("default", fieldStyle);
+        
+        /*SelectBoxStyle sbStyle=new SelectBoxStyle();
+        sbStyle.font=skin.getFont("default");
+        sbStyle.fontColor=Color.MAGENTA;
+        sbStyle.background=skin.getDrawable("gray");
+        //sbStyle.scrollStyle=Scrollpanel;
+        
+        skin.add("default", sbStyle);*/
+        
+      //Select Box Style
+        SelectBoxStyle boxStyle = new SelectBoxStyle();
+        boxStyle.fontColor = Color.MAGENTA;
+        boxStyle.background = skin.getDrawable("gray");
+        boxStyle.font = skin.getFont("default");
+        boxStyle.scrollStyle = new ScrollPaneStyle();
+        boxStyle.scrollStyle.background = skin.getDrawable("gray");
+        boxStyle.listStyle = new List.ListStyle();
+        boxStyle.listStyle.font = skin.getFont("default");
+        boxStyle.listStyle.fontColorSelected = Color.BLUE;
+        boxStyle.listStyle.fontColorUnselected = Color.RED;
+        boxStyle.listStyle.selection = skin.getDrawable("gray");
+        boxStyle.listStyle.background =skin.getDrawable("purple");
+
+        //SelectBox
+        String[] ballSpeeds = new String[]{"Slow", "Medium", "Fast", "Fastest"};
+        final SelectBox<String> ballspeedbox = new SelectBox<String>(boxStyle);
+        ballspeedbox.setItems(ballSpeeds);
+        
+        SliderStyle sliderStyle = new SliderStyle();
+        sliderStyle.background = skin.getDrawable("gray");
+        sliderStyle.background.setMinWidth(600f);
+       
+        sliderStyle.knob = skin.getDrawable("purple");
+        
+        skin.add("default-horizontal", sliderStyle);
         /////////////////////////////////////////////
-	            
+        Gdx.app.log("Resources", "Finished creating skin");       
     }
     
     

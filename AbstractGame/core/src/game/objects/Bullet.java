@@ -36,7 +36,7 @@ public class Bullet extends GameObject implements Updatable{
         
         imgWidth=(radius*10);
     	imgHeight=(radius*10);
-        speed=20;
+        speed=35;
         dying=false;
         this.friendly=friendly;
     }

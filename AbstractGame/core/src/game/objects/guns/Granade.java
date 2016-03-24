@@ -12,11 +12,12 @@ import com.badlogic.gdx.utils.Timer.Task;
 
 import game.Content;
 import game.MyConst;
+import game.ai.EnemyState;
 import game.objects.Bullet;
-import game.objects.Enemy;
 import game.objects.GameObject;
-import game.objects.Player;
 import game.objects.Updatable;
+import game.objects.organic.Enemy;
+import game.objects.organic.Player;
 import game.states.PlayState;
 import game.tools.MyUtils;
 import game.tools.VisibleCallback;
@@ -92,10 +93,18 @@ public class Granade extends GameObject implements Updatable{
 				if(isObjectInView(obj)&&obj.isFriendly()!=isFriendly()){
 					obj.setHealth(obj.getHealth()-200);;
 				}
+				
+			}
+		}
+		for(GameObject obj:MyUtils.objInRange(state.getObjects(), getPosition(), (float)Math.pow(explosionRadius,2))){
+			if(obj instanceof Enemy){
+				Enemy e=(Enemy)obj;
+				e.getStateMachine().changeState(EnemyState.SEARCH);
+				
 			}
 		}
 		state.addObj(new Effect(state, getPosition().cpy(),Effect.EXPLOSION));
-		Content.getSound("explosion").play();
+		Content.getSound("explosion").play(MyConst.SFXvol);
 	}
 	
 	public boolean isObjectInView(GameObject obj){

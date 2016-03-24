@@ -1,12 +1,12 @@
 package game.tools;
 
 import game.ai.EnemyState;
-import game.objects.Box;
 import game.objects.Bullet;
-import game.objects.Enemy;
 import game.objects.GameObject;
 import game.objects.Pickable;
-import game.objects.Player;
+import game.objects.items.Box;
+import game.objects.organic.Enemy;
+import game.objects.organic.Player;
 import game.states.PlayState;
 import game.visuals.Effect;
 
@@ -70,7 +70,7 @@ public class Contacts implements ContactListener{
 		//effect type
 		int type=Effect.OBJECT_HIT;
 		
-		if((other instanceof Enemy|| other instanceof Player)&&other.isFriendly()!=bullet.isFriendly()){
+		if((other instanceof Enemy/*|| other instanceof Player*/)&&other.isFriendly()!=bullet.isFriendly()){
         	((Bullet)bullet).setRed(true);
         	other.setHealth(other.getHealth()-10);
         	type=Effect.ENTITY_HIT;

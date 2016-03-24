@@ -5,8 +5,8 @@ package game.objects.guns;
 import game.MyConst;
 import game.objects.Bullet;
 import game.objects.GameObject;
-import game.objects.Player;
 import game.objects.Updatable;
+import game.objects.organic.Player;
 import box2dLight.Light;
 
 import com.badlogic.gdx.Gdx;
@@ -41,7 +41,7 @@ public abstract class Gun implements Updatable{
     }
     
     public void reload(){
-    	reloadSFX.play(MyConst.volumeSFX);
+    	//reloadSFX.play(MyConst.SFXvol);
     	reloading=true;
     }
     
@@ -87,6 +87,7 @@ public abstract class Gun implements Updatable{
     	
     }
     public void pullTrigger(Vector2 direction){
+    	
         if(reloading)return;
         
         //ampuminen
@@ -114,17 +115,29 @@ public abstract class Gun implements Updatable{
     }
     public void shoot(Vector2 direction){
     	
-    	if(shootSFX!=null)shootSFX.play(MyConst.volumeSFX);
+    	if(shootSFX!=null){
+    		if(this instanceof Pistol){
+    			shootSFX.play(MyConst.SFXvol*2f);
+    		}else{
+    			shootSFX.play(MyConst.SFXvol);
+    		}
+    		
+    	}
+    	
     	spawnBullet(direction);
     	
     }
     
     public void spawnBullet(Vector2 direction){
     	shooter.alertAllNear();
+    	if(shooter instanceof Player){
+    		
+    		
+    	}
     	Bullet b=new Bullet(shooter.getState(), shooter.getPosition().cpy().add(shooter.getDirection().cpy().limit(shooter.getRadius()+0.2f)),shooter.isFriendly());
     	
     	b.setDirection(direction.nor());
-    	b.setImgRotation(direction.angle()-90);
+    	b.setImgRotation(direction.angle());
     	
     	
     	//b.getBody().setLinearVelocity(direction.cpy().limit(10));

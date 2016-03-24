@@ -1,6 +1,6 @@
 package game.ai;
 
-import game.objects.Enemy;
+import game.objects.organic.Enemy;
 
 import com.badlogic.gdx.utils.Timer.Task;
 

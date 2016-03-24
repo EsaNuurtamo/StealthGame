@@ -17,12 +17,12 @@ import com.badlogic.gdx.physics.box2d.RayCastCallback;
 
 public class LaserCallback implements RayCastCallback{
 	
-	Vector2 contact=null;
-	Vector2 normal=null;
-	float smallest=Float.MAX_VALUE;
+	Vector2 contact;
+	Vector2 normal;
+	float smallest;
 	
 	public LaserCallback() {
-		
+		reset();
 	}
 	
 	public void reset(){
@@ -38,7 +38,7 @@ public class LaserCallback implements RayCastCallback{
 		   fixture.getFilterData().categoryBits==MyConst.CATEGORY_ENEMY||
 		   fixture.getFilterData().categoryBits==MyConst.CATEGORY_PLAYER||
 		   fixture.getFilterData().categoryBits==MyConst.CATEGORY_BULLETS
-				)return 1;
+		  )return 1;
 		
 		if(fraction<smallest){
 			
