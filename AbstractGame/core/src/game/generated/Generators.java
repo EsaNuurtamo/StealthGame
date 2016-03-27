@@ -1,5 +1,5 @@
 package game.generated;
 
-public class Generator {
+public class Generators {
 
 }
