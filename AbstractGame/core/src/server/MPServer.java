@@ -5,6 +5,7 @@ import game.objects.GameObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import server.Network.RegisterObject;
 
@@ -15,7 +16,7 @@ import com.esotericsoftware.minlog.Log;
 
 public class MPServer {
 	Server server;
-	HashSet<Character> objects = new HashSet();
+	List<GameObject> objects = new ArrayList<GameObject>();
 	
 	public MPServer() throws IOException{
 		Log.set(Log.LEVEL_DEBUG);

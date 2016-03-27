@@ -2,6 +2,7 @@ package server;
 
 import game.objects.GameObject;
 import game.objects.organic.Player;
+import game.states.PlayState;
 
 import java.io.IOException;
 
@@ -14,8 +15,9 @@ import server.Network.RegisterObject;
 public class ObjectClient {
 	Client client;
 	GameObject object;
-	public ObjectClient () {
-		this.object=object;
+	private PlayState state;
+	public ObjectClient (PlayStatet state) {
+		
 		client = new Client();
 		client.start();
 
